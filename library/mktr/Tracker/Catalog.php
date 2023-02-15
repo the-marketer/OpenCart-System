@@ -35,7 +35,9 @@ trait Catalog {
             return ;
         }
         self::$load = true;
-        $out = Events::google_head(). Events::loader(). Events::loadEvents(). Events::google_body().Events::loader_body();
+        $out = Events::google_head(). Events::loader(). Events::loadEvents().
+        // Events::google_body().
+        Events::loader_body();
         if (Core::getOcVersion() >= "2.0") {
             echo $out;
         } else {
@@ -76,7 +78,9 @@ trait Catalog {
             }
         }
     }
-
+    public static function links(&$route=null, &$data=null, &$template =null) {
+        
+    }
     /** @noinspection PhpUnusedParameterInspection */
     public static function loader(&$route, &$data, &$output) {
         if (!Config::getStatus() || self::$load) {
@@ -93,7 +97,7 @@ trait Catalog {
                 Events::google_head().
                 Events::loader().
                 Events::loadEvents().
-                Events::google_body().
+                // Events::google_body().
                 Events::loader_body().'</head>',
                '</body>'
             ), $output);

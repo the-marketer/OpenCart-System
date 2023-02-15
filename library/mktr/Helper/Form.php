@@ -56,7 +56,7 @@ class Form
             $conf = Config::init();
             foreach ($_POST[Core::getModuleCode()] as $key=>$value)
             {
-                if (in_array($key, array('tracking_key', 'rest_key', 'customer_id', 'google_tagCode')) && empty($value)) {
+                if (in_array($key, array('tracking_key', 'rest_key', 'customer_id', 'google_tracking')) && empty($value)) {
                     $fail = $key;
                 }
 
@@ -71,6 +71,8 @@ class Form
                     }
                     $conf->set($key, $value);
                     // mkConfig::saveSetting($key, $value, Core::getStoreID());
+                } else if($key === 'google_status') {
+                    $conf->set($key, $value);
                 } else {
                     $conf->set($key, $value);
                     // mkConfig::saveSetting($key, $value, Core::getStoreID());

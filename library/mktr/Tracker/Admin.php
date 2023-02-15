@@ -266,6 +266,198 @@ trait Admin {
         return self::$mkData["FormData"];
     }
 
+    public function google() {
+        Form::initProcess();
+
+        if (Core::getOcVersion() >= "4") {
+            $this->load->language('extension/opencart/module/category');
+        }
+
+        Core::i()->document->setTitle(Logo::getTitle('Google'));
+
+        if (Core::getOcVersion() >= "2.0") {
+            $data['header'] = Core::i()->load->controller('common/header');
+            $data['column_left'] = Core::i()->load->controller('common/column_left');
+            $data['footer'] = Core::i()->load->controller('common/footer');
+        } else {
+            $data['header'] = Core::i()->getChild('common/header');
+            // $data['column_left'] = Core::i()->getChild('common/column_left');
+            $data['footer'] = Core::i()->getChild('common/footer');
+        }
+        
+        if (Core::getOcVersion() <= "2.2.9"){
+            $cancel = Core::url()->link('extension/module', Core::token() . '&type=module', true);
+        } else if (Core::getOcVersion() <= "2.4"){
+            $cancel = Core::url()->link('extension/extension', Core::token() . '&type=module', true);
+        } else {
+            $cancel = Core::url()->link('marketplace/extension', Core::token() . '&type=module', true);
+        }
+        
+        $action = Core::url()->link(Core::getLinkCus('mktr_google').'&store_id=' . Core::getStoreID(), Core::token(), true);
+
+        $data['breadcrumbs'] = array();
+
+        $data['breadcrumbs'][] = array(
+            'name' => Core::i()->language->get('text_home'),
+            'href' => Core::url()->link('common/dashboard', Core::token(), true)
+        );
+        if (Core::getOcVersion() <= "2.2.9"){
+            $data['breadcrumbs'][] = array(
+                'name' => "Modules",
+                'href' => Core::url()->link('extension/module', Core::token() . '&type=module', true)
+            );
+        } else if (Core::getOcVersion() <= "2.4"){
+            $data['breadcrumbs'][] = array(
+                'name' => "Extensions",
+                'href' => Core::url()->link('extension/extension', Core::token() . '&type=module', true)
+            );
+        } else {
+            $data['breadcrumbs'][] = array(
+                'name' => "Extensions",
+                'href' => Core::url()->link('marketplace/extension', Core::token() . '&type=module', true)
+            );
+        }
+
+        $data['breadcrumbs'][] = array(
+            'name' => Logo::getH1('Google').' >> '.Config::init()->get('store_name'),
+            'href' => $action
+        );
+
+        $out = array($data['header']);
+
+        if (Core::getOcVersion() >= "2.0") {
+            $out[] = $data['column_left'];
+        }
+
+        $form = self::$mkData["FormData"] = array(
+            array(
+                'google_status' => array(
+                    'title'     => 'Status',
+                    'type'      => 'select'
+                ),
+                /* Account Settings */
+                'google_tracking' => array(
+                    'title'     => 'Tracking Key *',
+                    'type'      => 'text',
+                    'holder'    => 'Your Google Tag Manager Tracking Key.'
+                )
+            )
+        );
+        Form::formFields($form[0]);
+
+        $Form = Form::getForm();
+        if (Core::getOcVersion() >= "2.0") {
+            $o = array();
+            $c = Core::getOcVersion() >= "4" ? ' class="breadcrumb-item"' : ' ';
+            foreach ($data['breadcrumbs'] as $b) {
+                $o[0][] = '<li'.$c.'><a href="' . $b['href'] . '">'.$b['name'].'</a></li>';
+            }
+
+            foreach (Core::getChildren() as $b) {
+                $o[1][] = '<li style="display: inline-block;text-shadow: 0 1px #fff;"><a href="' . $b['href'] . '">'.$b['name'].'</a></li>';
+            }
+
+            $card = Core::getOcVersion() >= "4" ? ' class="card"' : ' class="panel panel-default"';
+            $cardH = Core::getOcVersion() >= "4" ? ' class="card-header"' : ' class="panel-heading"';
+            $cardB = Core::getOcVersion() >= "4" ? ' class="card-body"' : ' class="panel-body"';
+
+            $out[] =  '<div id="content">
+                <div class="page-header">
+                    <div class="container-fluid">
+                        <div class="'.(Core::getOcVersion() >= "4" ? "float-end" : "pull-right").'">
+                            <button type="submit" form="form-module" data-toggle="tooltip" title="Save" class="btn btn-primary"><i class="fa fa-save"></i></button>
+                            <a href="'.$cancel.'" data-toggle="tooltip" title="Cancel" class="btn btn-default"><i class="fa fa-reply"></i></a>
+                        </div>';
+            $out[] = '<div class="container-fluid"><'.(Core::getOcVersion() >= "4" ? "ol" : "ul").' class="breadcrumb">'.implode("", $o[0]).'</'.(Core::getOcVersion() >= "4" ? "ol" : "ul").'></div></div></div>';
+            $out[] = '<div class="container-fluid"><div'.$card.'><div'.$cardH.'>
+        <h3 class="panel-title">Select Store</h3>
+      </div><div'.$cardB.'>'.implode("|",$o[1]).'</div></div>';
+
+            foreach (Form::getNotice() as $value) {
+                $out[] = '<div class="alert alert-'.(isset($value['type']) ? $value['type'] : 'success').' alert-dismissible"><i class="fa '.(isset($value['type']) ? 'fa-exclamation-circle' : 'fa-circle-info').'"></i> '.$value['message'].'<button type="button" class="close" data-dismiss="alert">&times;</button></div>';
+            }
+
+            $out[] = '<form method="POST" action="'.$action.'" enctype="multipart/form-data" class="form-horizontal" id="form-module">';
+            $out[] = '<div'.$card.'><div'.$cardH.'>
+        <h3 class="panel-title">'.Logo::getText('Main Settings').'</h3>
+      </div><div'.$cardB.'>'.$Form[0].'</div></div>';
+
+            $out[] = '</form>'.$data['footer'];
+        } else {
+            $o = array();
+            foreach ($data['breadcrumbs'] as $b) {
+                $o[0][] = '<a href="' . $b['href'] . '">'.$b['name'].'</a>';
+            }
+
+            foreach (Core::getChildren() as $b) {
+                $o[1][] = '<a style="text-decoration:none" href="' . $b['href'] . '">'.$b['name'].'</a>';
+            }
+            $out[] = '<div id="content">';
+            $out[] = '<div class="breadcrumb">'.implode(" :: ",$o[0]).'</div>';
+            $out[] = '<div class="box">
+    <div class="heading">
+        <h1>Select Store: '.implode(" :: ",$o[1]).'</h1>
+        <div class="buttons">
+            <a onclick="$(\'#form-module\').submit();" class="button">Save</a>
+            <a href="'.$cancel.'" class="button">Cancel</a>
+        </div>
+    </div>';
+$out[] = '<div class="content">';
+$out[] = '<style>
+.col-sm-10 {
+    width: 83.3333333333%;
+}
+.col-sm-2 {
+    width: 16.6666666667%;
+}
+
+.form-horizontal .control-label {
+    text-align: right;
+    margin-bottom: 0;
+    padding-top: 9px;
+    font-size: 14px;
+    font-weight: bold;
+}
+.form-group {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    margin-bottom: 0;
+}
+.form-control {
+    display: block;
+    width: 100%;
+    max-width: 700px;
+    padding: 8px 13px !important;
+    font-size: 13px;
+    line-height: 1.428571429;
+    margin-top: 8px;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    -webkit-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+    -o-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+}
+select.form-control {
+max-width: 728px !important;
+}
+</style>';
+$out[] = '<form method="POST" action="'.$action.'" enctype="multipart/form-data" class="form-horizontal" id="form-module">';
+$out[] = $Form[0];
+$out[] = '</form>';
+$out[] = '</div>';
+$out[] = '</div>';
+$out[] = '</div>';
+            $out[] = $data['footer'];
+        }
+
+        Core::response()->setOutput(implode(" ", $out));
+    }
+
     public function index() {
         if (Config::$addToModule) {
             self::checkModule();
@@ -289,7 +481,14 @@ trait Admin {
             $data['footer'] = Core::i()->getChild('common/footer');
         }
 
-        $cancel = Core::url()->link('marketplace/extension', Core::token() . '&type=module', true);
+        if (Core::getOcVersion() <= "2.2.9"){
+            $cancel = Core::url()->link('extension/module', Core::token() . '&type=module', true);
+        } else if (Core::getOcVersion() <= "2.4"){
+            $cancel = Core::url()->link('extension/extension', Core::token() . '&type=module', true);
+        } else {
+            $cancel = Core::url()->link('marketplace/extension', Core::token() . '&type=module', true);
+        }
+        
         $action = Core::url()->link(Core::getLink().'&store_id=' . Core::getStoreID(), Core::token(), true);
 
         $data['breadcrumbs'] = array();
@@ -299,10 +498,22 @@ trait Admin {
             'href' => Core::url()->link('common/dashboard', Core::token(), true)
         );
 
-        $data['breadcrumbs'][] = array(
-            'name' => "Extensions",
-            'href' => Core::url()->link('marketplace/extension', Core::token() . '&type=module', true)
-        );
+        if (Core::getOcVersion() <= "2.2.9"){
+            $data['breadcrumbs'][] = array(
+                'name' => "Modules",
+                'href' => Core::url()->link('extension/module', Core::token() . '&type=module', true)
+            );
+        } else if (Core::getOcVersion() <= "2.4"){
+            $data['breadcrumbs'][] = array(
+                'name' => "Extensions",
+                'href' => Core::url()->link('extension/extension', Core::token() . '&type=module', true)
+            );
+        } else {
+            $data['breadcrumbs'][] = array(
+                'name' => "Extensions",
+                'href' => Core::url()->link('marketplace/extension', Core::token() . '&type=module', true)
+            );
+        }
 
         $data['breadcrumbs'][] = array(
             'name' => Logo::getH1('Tracker').' >> '.Config::init()->get('store_name'),
@@ -506,31 +717,44 @@ $out[] = '</div>';
      * @noinspection PhpUnused
      * @noinspection PhpUnusedParameterInspection
      */
-    public static function Links(&$route, &$data, &$template) {
+    public static function links(&$route=null, &$data=null, &$template =null) {
         // Core::dd(array($route, $data, $template));
 
         if (!Core::user()->hasPermission('access', Core::getLink())) {
             return;
         }
 
-        $newOder = array();
-
-        foreach ($data['menus'] as $menu) {
-            $newOder[] = $menu;
-
-            if ($menu['id'] == 'menu-dashboard') {
-
-                $newOder[] = array(
-                    'id' => 'menu-mktr',
-                    'name' => Logo::getMenuTitle2(),
-                    'href' => '',
-                    'icon' => Core::getOcVersion() >= "2.4" ? '' : 'fa-paper-plane',
-                    'children' => Core::getChildren()
-                );
+        Logo::getTitle('Tracker');
+        if (Core::getOcVersion() >= "2.3") {
+            $newOder = array();
+            foreach ($data['menus'] as $menu) {
+                $newOder[] = $menu;
+    
+                if ($menu['id'] == 'menu-dashboard') {
+                    $newOder[] = array(
+                        'id' => 'menu-mktr',
+                        'name' => Core::getOcVersion() >= "2.4" ? Logo::getMenuTitle2() : Logo::getTitle(),
+                        'href' => '',
+                        'icon' => Core::getOcVersion() >= "2.4" ? '' : 'fa-paper-plane',
+                        'children' => Core::getChildren()
+                    );
+                }
             }
-        }
+            $data['menus'] = $newOder;
+        } else {
+            
+            $chil = '<ul>';
 
-        $data['menus'] = $newOder;
+            foreach (Core::getChildren() as $key=>$val) {
+                $chil .= '<li><a href="'.$val['href'].'">'.$val['name'].'</a></li>'; 
+            }
+
+            $chil .= '</ul>';
+
+            $data['menu'] = str_replace(
+                '<li id="catalog">',
+                '<li id="mktr"><a class="parent"><i class="fa fa-paper-plane fa-fw"></i> <span>'.Logo::getTitle().'</span></a>'.$chil.'</li><li id="catalog">',$data['menu']);
+        }        
     }
 
     public static function install()
@@ -591,15 +815,66 @@ $out[] = '</div>';
         return $refundStatus;
     }
 
+    public static function uninstallgoogle() {
+        if (mkConfig::checkTable()) {
+            $conf = Config::init();
+            
+            $conf->set('google_status', 0);
+            $conf->set('google_tracking', '');
+            $conf->save();
+        }
+    }
+    public static function installgoogle() {
+        if (!mkConfig::checkTable()) {
+            if (Core::getOcVersion() >= "2.0" && Core::getOcVersion() <= "2.4"){
+                $do = Core::i()->model_extension_extension;
+            } else {
+                $do = Core::i()->model_setting_extension;
+            }
+            
+            $do->uninstall('module', 'mktr_google');
+            
+            $msg = 'Please install The Marketer - Tracker First';
+
+            
+            if (Core::getOcVersion() >= "4") {
+                echo json_encode(['error'=> $msg]);
+                die();
+            } /* else {
+                // Core::i()->session->data['error'] = $msg;
+                // Core::i()->response->addHeader('Content-Type: application/json');
+		        // Core::i()->response->setOutput($msg);
+                // Core::i()->session->data['error'] = $msg;
+                // Core::i()->session->data['success'] = null;
+                // return ['error'=> $msg];
+            }
+            */
+        } else if (Core::getOcVersion() >= "3") {
+            Settings::editSetting(array('status'=>1), $store_id = null, Core::getCodeCus('mktr_google'));
+        }
+    }
+
     public static function uninstall()
     {
+        $u20 = Core::getOcVersion() >= "2.0";
+
+        if ($u20 && Core::getOcVersion() <= "2.4"){
+            $do = Core::i()->model_extension_extension;
+        } else {
+            $do = Core::i()->model_setting_extension;
+        }
+
+        $do->uninstall('module', 'mktr_google');
+
         Settings::deleteSetting(Core::getCode());
-        if (Core::getOcVersion() >= "2.0") {
+
+        if ($u20) {
             Events::deleteEventByCode(Core::getModuleCode());
             if (Config::$addToModule) {
                 Module::deleteModulesByCode(Core::getModuleCode());
             }
         }
+        
         mkConfig::drop();
     }
 }

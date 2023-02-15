@@ -183,6 +183,10 @@ class Core
         return Core::getOcVersion() >= '3.0' ? 'module_'.Config::$code : Config::$code;
     }
 
+    public static function getCodeCus($code) {
+        return Core::getOcVersion() >= '3.0' ? 'module_'.$code : $code;
+    }
+
     /** @noinspection PhpUnused */
     public static function getLanguagePath() {
         return Core::getOcVersion() >= '2.2' ? 'en-gb': 'english';
@@ -196,6 +200,11 @@ class Core
     /** @noinspection PhpUnused */
     public static function getLink() {
         return self::getControllerPath().'/'.self::getModuleCode();
+    }
+
+    /** @noinspection PhpUnused */
+    public static function getLinkCus($code) {
+        return self::getControllerPath().'/'.$code;
     }
 
 

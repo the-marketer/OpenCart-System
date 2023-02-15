@@ -44,6 +44,18 @@ class mkConfig extends DB
         return 'mktr_config';
     }
 
+    public static function checkTable() {
+        $is = true;
+
+        try {
+            Core::query("SELECT * FROM `". DB_PREFIX.self::getTable() ."` LIMIT 1");
+        } catch (\Exception $e) {
+            $is = false;
+        }
+        
+        return $is;
+    }
+
     /** @noinspection PhpComposerExtensionStubsInspection */
     public static function getSettings($store_id = null) {
         if ($store_id === null) {

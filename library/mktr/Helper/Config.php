@@ -82,7 +82,7 @@ importScripts("https://t.themarketer.com/firebase.js");';
         'size' => 'size',
         'google_status' => 0,
         /* TODO Google Test */
-        'google_tagCode' => ""//'GTM-P3TT7N2'
+        'google_tracking' => ""//'GTM-P3TT7N2'
     );
 
     private static $funcNames = array(
@@ -104,7 +104,7 @@ importScripts("https://t.themarketer.com/firebase.js");';
         'getCronReview' => array('cron_review', 'int'),
         'getUpdateReview' => array('update_review', 'int'),
         'getGoogleStatus' => array('google_status', 'int'),
-        'getTagCode' => array('google_tagCode', false),
+        'getTagCode' => array('google_tracking', false),
 
     );
 
@@ -127,7 +127,7 @@ importScripts("https://t.themarketer.com/firebase.js");';
         'color' => 'color',
         'size' => 'size',
         'google_status' => 'google_status',
-        'google_tagCode' => 'google_tagCode'
+        'google_tracking' => 'google_tracking'
     );
 
     private static $configValues = array();
@@ -223,6 +223,7 @@ importScripts("https://t.themarketer.com/firebase.js");';
         $this->data[$key] = $value;
         return self::$init;
     }
+    
     public function save() {
         if ($this->save) {
             $id = Core::getStoreID();
