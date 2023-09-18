@@ -19,7 +19,7 @@ class Store
 
         if (!$stores) {
             if (Core::getOcVersion() >= "4") {
-                
+
                 if (defined('HTTP_CATALOG')) {
                     $url = basename(DIR_TEMPLATE) == 'template' ? HTTP_CATALOG : HTTP_SERVER;
                 } else {
@@ -38,10 +38,10 @@ class Store
                 )
             );
 
-            $query = Core::query("SELECT * FROM `". DB_PREFIX.self::getTable() ."` ORDER BY store_id");
+            $query = Core::query("SELECT * FROM `" . DB_PREFIX . self::getTable() . "` ORDER BY store_id");
 
             foreach ($query->rows as $value) {
-                $value['store_id'] = (int)$value['store_id'];
+                $value['store_id'] = (int) $value['store_id'];
                 $stores[$value['store_id']] = $value;
             }
 

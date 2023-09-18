@@ -20,26 +20,26 @@ class Events
 
     private static $assets = array();
 
-    private static $actions = [
+    private static $actions = array(
         "is_home" => "__sm__view_homepage",
         "is_product_category" => "__sm__view_category",
         "is_product" => "__sm__view_product",
         "is_brand" => "__sm__view_brand",
         "is_checkout" => "__sm__initiate_checkout",
         "is_search" => "__sm__search"
-    ];
+    );
 
-    public static $observerGetEvents = [
-        "addToCart"=> [false, "__sm__add_to_cart"],
-        "removeFromCart"=> [false, "__sm__remove_from_cart"],
-        "addToWishlist"=> [false, "__sm__add_to_wishlist"],
-        "removeFromWishlist"=> [false, "__sm__remove_from_wishlist"],
-        "saveOrder"=> [true, "__sm__order"],
-        "setEmail"=> [true, "__sm__set_email"],
-        "setPhone"=> [false, "__sm__set_phone"]
-    ];
+    public static $observerGetEvents = array(
+        "addToCart"=> array(false, "__sm__add_to_cart"),
+        "removeFromCart"=> array(false, "__sm__remove_from_cart"),
+        "addToWishlist"=> array(false, "__sm__add_to_wishlist"),
+        "removeFromWishlist"=> array(false, "__sm__remove_from_wishlist"),
+        "saveOrder"=> array(true, "__sm__order"),
+        "setEmail"=> array(true, "__sm__set_email"),
+        "setPhone"=> array(false, "__sm__set_phone")
+    );
 
-    private static $eventsName = [
+    private static $eventsName = array(
         "__sm__view_homepage" =>"HomePage",
         "__sm__view_category" => "Category",
         "__sm__view_brand" => "Brand",
@@ -53,80 +53,80 @@ class Events
         "__sm__search" => "Search",
         "__sm__set_email" => "setEmail",
         "__sm__set_phone" => "setPhone"
-    ];
+    );
 
-    private static $eventsSchema = [
+    private static $eventsSchema = array(
         "HomePage" => null,
         "Checkout" => null,
         "Cart" => null,
 
-        "Category" => [
+        "Category" => array(
             "category" => "category"
-        ],
+        ),
 
-        "Brand" => [
+        "Brand" => array(
             "name" => "name"
-        ],
+        ),
 
-        "Product" => [
+        "Product" => array(
             "product_id" => "product_id"
-        ],
+        ),
 
-        "Search" => [
+        "Search" => array(
             "search_term" => "search_term"
-        ],
+        ),
 
-        "setPhone" => [
+        "setPhone" => array(
             "phone" => "phone"
-        ],
+        ),
 
-        "addToWishlist" => [
+        "addToWishlist" => array(
             "product_id" => "product_id",
-            "variation" => [
+            "variation" => array(
                 "@key" => "variation",
-                "@schema" => [
+                "@schema" => array(
                     "id" => "id",
                     "sku" => "sku"
-                ]
-            ]
-        ],
+                )
+            )
+        ),
 
-        "removeFromWishlist" => [
+        "removeFromWishlist" => array(
             "product_id" => "product_id",
-            "variation" => [
+            "variation" => array(
                 "@key" => "variation",
-                "@schema" => [
+                "@schema" => array(
                     "id" => "id",
                     "sku" => "sku"
-                ]
-            ]
-        ],
+                )
+            )
+        ),
 
-        "addToCart" => [
-            "product_id" => "product_id",
-            "quantity" => "quantity",
-            "variation" => [
-                "@key" => "variation",
-                "@schema" => [
-                    "id" => "id",
-                    "sku" => "sku"
-                ]
-            ]
-        ],
-
-        "removeFromCart" => [
+        "addToCart" => array(
             "product_id" => "product_id",
             "quantity" => "quantity",
-            "variation" => [
+            "variation" => array(
                 "@key" => "variation",
-                "@schema" => [
+                "@schema" => array(
                     "id" => "id",
                     "sku" => "sku"
-                ]
-            ]
-        ],
+                )
+            )
+        ),
 
-        "saveOrder" => [
+        "removeFromCart" => array(
+            "product_id" => "product_id",
+            "quantity" => "quantity",
+            "variation" => array(
+                "@key" => "variation",
+                "@schema" => array(
+                    "id" => "id",
+                    "sku" => "sku"
+                )
+            )
+        ),
+
+        "saveOrder" => array(
             "number" => "number",
             "email_address" => "email_address",
             "phone" => "phone",
@@ -140,24 +140,24 @@ class Events
             "shipping" => "shipping",
             "tax" => "tax",
             "total_value" => "total_value",
-            "products" => [
+            "products" => array(
                 "@key" => "products",
                 "@schema" =>
-                    [
+                    array(
                         "product_id" => "product_id",
                         "price" => "price",
                         "quantity" => "quantity",
                         "variation_sku" => "variation_sku"
-                    ]
-            ]
-        ],
+                    )
+            )
+        ),
 
-        "setEmail" => [
+        "setEmail" => array(
             "email_address" => "email_address",
             "firstname" => "firstname",
             "lastname" => "lastname"
-        ]
-    ];
+        )
+    );
 
     /**
      * @var array
@@ -178,12 +178,12 @@ class Events
         $lines[] = '(function(d, s, i) {
         var f = d.getElementsByTagName(s)[0], j = d.createElement(s);j.async = true;
         j.src = "https://t.themarketer.com/t/j/" + i; f.parentNode.insertBefore(j, f);
-    })(document, "script", "'.Config::getKey().'");';
+    })(document, "script", "' . Config::getKey() . '");';
 
         $lines[] = 'window.MktrDebug = function () { if (typeof dataLayer != undefined) { for (let i of dataLayer) { console.log("Mktr","Google",i); } } };';
         $lines[] = '';
         $wh =  array(Config::space, implode(Config::space, $lines));
-        $rep = array("%space%","%implode%");
+        $rep = array("%space%", "%implode%");
         /** @noinspection BadExpressionStatementJS */
         /** @noinspection JSUnresolvedVariable */
         return str_replace($rep, $wh, '<!-- Mktr Script Start -->%space%<script type="text/javascript">%space%%implode%%space%</script>%space%<!-- Mktr Script END -->');
@@ -198,7 +198,7 @@ class Events
         {
             if (CheckPage::{$key}())
             {
-                $lines[] = "dataLayer.push(".self::getEvent($value)->toJson().");";
+                $lines[] = "dataLayer.push(" . self::getEvent($value)->toJson() . ");";
                 break;
             }
         }
@@ -211,7 +211,7 @@ class Events
             {
                 foreach ($eventData as $key => $value)
                 {
-                    $lines[] = "dataLayer.push(".self::getEvent($Name[1], $value)->toJson().");";
+                    $lines[] = "dataLayer.push(" . self::getEvent($Name[1], $value)->toJson() . ");";
                     if (!$Name[0]) {
                         $clear[$event][$key] = $key;
                     }
@@ -229,19 +229,19 @@ class Events
 
         foreach ($loadJS as $k=>$v)
         {
-            $lines[] = '(function(){ let add = document.createElement("script"); add.async = true; add.src = "'.Core::url()->link('mktr/api/'.$k.'/').'"; let s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(add,s); })();';
+            $lines[] = '(function(){ let add = document.createElement("script"); add.async = true; add.src = "' . Core::url()->link('mktr/api/' . $k . '/') . '"; let s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(add,s); })();';
         }
 
         if (!empty($clear)) {
             Core::setSessionData("ClearMktr", $clear);
 
-            $lines[] = '(function(){ let add = document.createElement("script"); add.async = true; add.src = "'.Core::url()->link('mktr/api/clearEvents/').'"; let s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(add,s); })();';
+            $lines[] = '(function(){ let add = document.createElement("script"); add.async = true; add.src = "' . Core::url()->link('mktr/api/clearEvents/') . '"; let s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(add,s); })();';
         }
 
         //$lines[] = 'setTimeout(window.MktrDebug, 1000);';
 
         $wh =  array(Config::space, implode(Config::space, $lines));
-        $rep = array("%space%","%implode%");
+        $rep = array("%space%", "%implode%");
         /** @noinspection BadExpressionStatementJS */
         /** @noinspection JSUnresolvedVariable */
         return str_replace($rep, $wh, '<!-- Mktr Script Start -->%space%<script type="text/javascript">%space%%implode%%space%</script>%space%<!-- Mktr Script END -->');
@@ -272,10 +272,10 @@ class Events
         })(jQuery); </script>';*/
             return '<!-- Mktr Script Start --><script type="text/javascript">
 window.addEventListener("click", function(event){
-    if (event.target.matches("'.str_replace('"','\"',Config::getSelectors()).'")) {
+    if (event.target.matches("' . str_replace('"','\"',Config::getSelectors()) . '")) {
         setTimeout(function(){
             (function(){
-                let add = document.createElement("script"); add.async = true; add.src = "'.Core::url()->link('mktr/api/LoadEvents/').'"; let s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(add,s);
+                let add = document.createElement("script"); add.async = true; add.src = "' . Core::url()->link('mktr/api/LoadEvents/') . '"; let s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(add,s);
             })();
         }, 3000); 
     }
@@ -296,7 +296,7 @@ window.addEventListener("click", function(event){
             new Date().getTime(),event:'gtm.js'}); let f=d.getElementsByTagName(s)[0],
         j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','" .$key."');</script>
+    })(window,document,'script','dataLayer','" . $key . "');</script>
 <!-- End Google Tag Manager -->";
         }
         return '';
@@ -306,7 +306,7 @@ window.addEventListener("click", function(event){
         $key = Config::getTagCode();
         if (Config::getGoogleStatus() && !empty($key)) {
             return'<!-- Google Tag Manager (noscript) -->
-        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id='.$key.'" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=' . $key . '" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <!-- End Google Tag Manager (noscript) -->';
         }
         return '';
@@ -321,7 +321,7 @@ window.addEventListener("click", function(event){
 
     public static function schemaValidate($array, $schema)
     {
-        $newOut = [];
+        $newOut = array();
 
         foreach ($array as $key=>$val) {
             if (isset($schema[$key])){
@@ -338,7 +338,7 @@ window.addEventListener("click", function(event){
         return $newOut;
     }
 
-    public static function getEvent($Name, $eventData = [])
+    public static function getEvent($Name, $eventData = array())
     {
         if (empty(self::$eventsName[$Name]))
         {
@@ -401,7 +401,7 @@ window.addEventListener("click", function(event){
 
     /** @noinspection PhpUnused */
     public static function buildMultiCategory($List) {
-        self::$bMultiCat = [];
+        self::$bMultiCat = array();
         foreach ($List as $value) {
             Category::getById($value['category_id']);
             self::buildSingleCategory();

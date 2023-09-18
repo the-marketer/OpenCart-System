@@ -43,12 +43,12 @@ class FileSystem
         fwrite($file, $content);
         fclose($file);
 
-        self::$status[] = [
+        self::$status[] = array(
             'path' => self::getPath(),
             'fileName' => $fName,
             'fullPath' => self::getPath() . $fName,
             'status' => true
-        ];
+        );
 
         return self::init();
     }

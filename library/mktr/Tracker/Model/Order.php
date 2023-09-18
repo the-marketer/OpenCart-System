@@ -173,7 +173,7 @@ class Order
 
         if ($id !== null) {
             self::$data = array();
-            self::$asset = Core::query("SELECT * FROM `" . DB_PREFIX . "order` WHERE order_id = '" . (int)$id . "' LIMIT 1")->row;
+            self::$asset = Core::query("SELECT * FROM `" . DB_PREFIX . "order` WHERE order_id = '" . (int) $id . "' LIMIT 1")->row;
         }
 
         return self::init();
@@ -188,9 +188,9 @@ class Order
 
         $offset = (($page - 1) * $limit);
 
-        self::$orders = Core::query("SELECT * FROM `" . DB_PREFIX . "order` WHERE `date_added` >= '".$start_date.
-            "' ORDER BY `order_id` LIMIT ". $limit.
-            " OFFSET ". $offset);
+        self::$orders = Core::query("SELECT * FROM `" . DB_PREFIX . "order` WHERE `date_added` >= '" . $start_date .
+            "' ORDER BY `order_id` LIMIT " . $limit .
+            " OFFSET " . $offset);
 
         return self::$orders;
     }
@@ -206,7 +206,7 @@ class Order
             $list = Core::query("SELECT * FROM `" . DB_PREFIX . "order_status` WHERE `language_id` = '1'");
 
             if ($list->num_rows == 0) {
-                $list = Core::query("SELECT * FROM `" . DB_PREFIX . "order_status` WHERE `language_id` = '".Core::ocConfig('config_language_id')."'");
+                $list = Core::query("SELECT * FROM `" . DB_PREFIX . "order_status` WHERE `language_id` = '" . Core::ocConfig('config_language_id') . "'");
             }
 
             self::$statusList = array();
@@ -315,17 +315,17 @@ class Order
 
     public static function getAllTotal() {
         if (!self::$loadTotal) {
-            $total = Core::query("SELECT * FROM `" . DB_PREFIX . "order_total` WHERE order_id = '" . (int)self::id() . "'")->rows;
+            $total = Core::query("SELECT * FROM `" . DB_PREFIX . "order_total` WHERE order_id = '" . (int) self::id() . "'")->rows;
 
             foreach ($total as $v) {
 
                 if ($v['code'] === 'voucher' || $v['code'] === 'coupon') {
                     $matches = array();
                     preg_match('/\((.*)?\)/', $v['title'], $matches, PREG_OFFSET_CAPTURE);
-                    self::$data[$v['code'].'_code'] = $matches[1][0];
+                    self::$data[$v['code'] . '_code'] = $matches[1][0];
                 }
 
-                self::$data['total_'.$v['code']] = Core::digit2($v['value']);
+                self::$data['total_' . $v['code']] = Core::digit2($v['value']);
             }
         }
     }
@@ -333,23 +333,25 @@ class Order
     public static function getProducts($feed = false) {
         $products = array();
 
-        $pro = Core::query("SELECT * FROM `" . DB_PREFIX . "order_product` WHERE `order_id` = '" . (int)self::id() . "'")->rows;
+        $pro = Core::query("SELECT * FROM `" . DB_PREFIX . "order_product` WHERE `order_id` = '" . (int) self::id() . "'")->rows;
 
         foreach ($pro as $p) {
-            $opt = Core::query("SELECT * FROM `" . DB_PREFIX . "order_option` WHERE `order_id` = '" . (int)self::id() . "' AND `order_product_id` = '".$p['order_product_id']."'")->rows;
+            $opt = Core::query("SELECT * FROM `" . DB_PREFIX . "order_option` WHERE `order_id` = '" . (int) self::id() . "' AND `order_product_id` = '" . $p['order_product_id'] . "'")->rows;
             $id = array($p['product_id']);
             $sku = array($p['product_id']);
             foreach ($opt as $o) {
                 if ($o['product_option_value_id']!=0) {
                     $id[] = $o['product_option_id'];
                     $id[] = $o['product_option_value_id'];
-                    //$sku[] = $o['name'];
+                    // $sku[] = $o['name'];
+                    $sku[] = $o['product_option_id'];
                     $sku[] = $o['value'];
                 }
             }
             $id = implode(Config::$vSeparator, $id);
             $sku = implode(Config::$vSeparator, $sku);
-
+            
+            $sku = str_replace(' ', '_', $sku);
             if (!empty($p['tax'])) {
                 $p['price'] = $p['price'] + $p['tax'];
             }

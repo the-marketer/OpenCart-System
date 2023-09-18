@@ -80,7 +80,7 @@ class Brand
                 self::$Link = Core::ocConfig('config_url') . 'image/';
             }
         }
-        return self::$Link.$i;
+        return self::$Link . $i;
     }
 
     public static function getImageUrl() {
@@ -93,7 +93,7 @@ class Brand
 
     public static function getUrl() {
         if (!isset(self::$data['getUrl'])) {
-            self::$data['getUrl'] = Core::url()->link('product/manufacturer/info', 'manufacturer_id='.self::id());
+            self::$data['getUrl'] = Core::url()->link('product/manufacturer/info', 'manufacturer_id=' . self::id());
             if (strpos(self::$data['getUrl'], 'manufacturer_id=') !== false){
                 self::$data['getUrl'] = str_replace('&amp;','&', self::$data['getUrl']);
             }
@@ -111,12 +111,12 @@ class Brand
         $offset = (($page - 1) * $limit);
 
         self::$brand = Core::query(
-            "SELECT DISTINCT * FROM " . DB_PREFIX . "manufacturer m".
-            " LEFT JOIN " . DB_PREFIX . "manufacturer_to_store ms ON (m.manufacturer_id = ms.manufacturer_id)".
-            " WHERE".
-            " ms.store_id = '" . (int)Core::ocConfig('config_store_id') . "'".
-            " ORDER BY m.`manufacturer_id` LIMIT ". $limit.
-            " OFFSET ". $offset);
+            "SELECT DISTINCT * FROM " . DB_PREFIX . "manufacturer m" .
+            " LEFT JOIN " . DB_PREFIX . "manufacturer_to_store ms ON (m.manufacturer_id = ms.manufacturer_id)" .
+            " WHERE" .
+            " ms.store_id = '" . (int) Core::ocConfig('config_store_id') . "'" .
+            " ORDER BY m.`manufacturer_id` LIMIT " . $limit .
+            " OFFSET " . $offset);
 
         return self::$brand;
     }

@@ -56,11 +56,11 @@ importScripts("https://www.gstatic.com/firebasejs/9.4.0/firebase-messaging-compa
 importScripts("./firebase-config.js");
 importScripts("https://t.themarketer.com/firebase.js");';
 
-    private static $discountRules = [
+    private static $discountRules = array(
         0 => "fixed_cart",
         1 => "percent",
         2 => "free_shipping"
-    ];
+    );
 
     public static $configDefaults = array(
         'status' => 0,
@@ -140,7 +140,7 @@ importScripts("https://t.themarketer.com/firebase.js");';
     public function __construct() {
         $store = Store::getStores(Core::getStoreID());
 
-        $data = Core::cache('mktr_settings_'.Core::getStoreID());
+        $data = Core::cache('mktr_settings_' . Core::getStoreID());
 
         if (!$data) {
             $data = mkConfig::getSettings();
@@ -198,7 +198,7 @@ importScripts("https://t.themarketer.com/firebase.js");';
         {
             self::$configValues[$name] = self::init()->get(Config::$configNames[$name]);
 
-            if (in_array($name, array('color','size','brand'))) {
+            if (in_array($name, array('color', 'size', 'brand'))) {
                 $exp = array();
 
                 foreach (explode("|", self::$configValues[$name]) as $v) {
@@ -223,7 +223,7 @@ importScripts("https://t.themarketer.com/firebase.js");';
         $this->data[$key] = $value;
         return self::$init;
     }
-    
+
     public function save() {
         if ($this->save) {
             $id = Core::getStoreID();
@@ -238,7 +238,7 @@ importScripts("https://t.themarketer.com/firebase.js");';
 
             $this->save = false;
 
-            Core::setCache('mktr_settings_'.Core::getStoreID(), $toSave);
+            Core::setCache('mktr_settings_' . Core::getStoreID(), $toSave);
         }
         return self::$init;
     }
@@ -283,7 +283,7 @@ importScripts("https://t.themarketer.com/firebase.js");';
 
     public static function getBaseURL()
     {
-        return  Core::i()->getBaseUrl. '/';
+        return  Core::i()->getBaseUrl . '/';
     }
 
     /** @noinspection PhpUnused */

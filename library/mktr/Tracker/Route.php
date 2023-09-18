@@ -5,20 +5,21 @@
 
 namespace Mktr\Tracker;
 
-use Mktr\Helper\FileSystem;
+use Mktr\Helper\Core;
 use Mktr\Helper\Valid;
 use Mktr\Helper\Config;
-use Mktr\Tracker\Routes\Brands;
-use Mktr\Tracker\Routes\Category;
-use Mktr\Tracker\Routes\clearEvents;
-use Mktr\Tracker\Routes\CodeGenerator;
+use Mktr\Helper\FileSystem;
 use Mktr\Tracker\Routes\Cron;
 use Mktr\Tracker\Routes\Feed;
-use Mktr\Tracker\Routes\loadEvents;
+use Mktr\Tracker\Routes\Brands;
 use Mktr\Tracker\Routes\Orders;
 use Mktr\Tracker\Routes\Reviews;
-use Mktr\Tracker\Routes\saveOrder;
+use Mktr\Tracker\Routes\Category;
 use Mktr\Tracker\Routes\setEmail;
+use Mktr\Tracker\Routes\saveOrder;
+use Mktr\Tracker\Routes\loadEvents;
+use Mktr\Tracker\Routes\clearEvents;
+use Mktr\Tracker\Routes\CodeGenerator;
 
 class Route
 {
@@ -94,11 +95,9 @@ class Route
         }
 
         $p = strtolower($p);
-
         if(isset(self::$allMethods[$p]))
         {
             $page = self::$allMethods[$p];
-
             self::check($page);
 
             if (!Valid::status())
@@ -121,6 +120,10 @@ class Route
         {
             return false;
         }
+        if (in_array($name, array('Orders', 'Feed', 'Brands', 'Category'))) {
+            ini_set('memory_limit', '10G');
+            ini_set('max_execution_time', '3600');
+        }
 
         $run = self::$name();
 
@@ -128,30 +131,42 @@ class Route
         {
             $read = Valid::getParam('read');
             $file = Valid::getParam('file');
-
+            $no_save = Valid::getParam('no_save', 0);
+            $page = Valid::getParam('page');
             $start_date = Valid::getParam('start_date');
 
-            if ($start_date !== null)
-            {
-                $script = '.'. base64_encode($start_date);
-            } else {
-                $script = '';
+            $add = '';
+            $script = '';
+
+            if ($page !== null) {
+                $add = '.' . $page;
+                $limit = Valid::getParam('limit');
+                
+                if ($limit !== null) {
+                    $add = '.' . $page . '.' . $limit;
+                } else {
+                    $add = '.' . $page;
+                }
+            }
+            if ($start_date !== null) {
+                $script = '.' . base64_encode($start_date);
             }
 
-            $fileName = $run->get('fileName').$script.".".Valid::getParam('mime-type',Config::defMime);
+            $fileName = $run->get('fileName') . '.' . Core::getStoreID() . $add . $script . "." . Valid::getParam('mime-type',Config::defMime);
 
-            if ($file !== null)
-            {
+            if ($file !== null) {
                 header('Content-Disposition: attachment; filename=' . $fileName);
             }
 
-            FileSystem::setWorkDirectory();
+            FileSystem::setWorkDirectory('Storage');
 
             if ($read !== null && FileSystem::fileExists($fileName)) {
                 echo Valid::Output(FileSystem::readFile($fileName));
             } else {
-                echo Valid::Output($run->get('fileName'), array( $run->get('secondName') => $run->execute()));
-                FileSystem::writeFile($fileName, Valid::getOutPut());
+                echo Valid::Output($run->get('fileName'), array($run->get('secondName') => $run->execute()));
+                if ($no_save != 1) {
+                    FileSystem::writeFile($fileName, Valid::getOutPut());
+                }
             }
         } else {
             echo Valid::Output($run->execute());

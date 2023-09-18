@@ -36,7 +36,12 @@ class Reviews
 
     public static function execute() {
         // Valid::getParam('start_date-type', date('Y-m-d'));
-        $t = Valid::getParam('start_date', time());
+        $t = Valid::getParam('start_date', null);
+        if ($t === null) {
+            $t = strtotime("-1 day");
+            // (new \DateTime())->modify('-1 day')->setTime(0, 0, 0);
+        }
+
         $o = Api::send("product_reviews", array(
             't' => strtotime($t)
         ), false);
@@ -44,7 +49,7 @@ class Reviews
 
             $xml = simplexml_load_string($o->getContent(), 'SimpleXMLElement', LIBXML_NOCDATA);
             $added = array();
-            $revStore = Data::init()->{"reviewStore".Config::getRestKey()};
+            $revStore = Data::init()->{"reviewStore" . Config::getRestKey()};
 
             foreach ($xml->review as $value) {
                 if (isset($value->review_date)) {
@@ -53,7 +58,7 @@ class Reviews
                             'author'    => $value->review_author,
                             'product_id'=> $value->product_id, // <=== The product ID where the review will show up
                             'text'      => $value->review_text,
-                            'rating' => round(((int)$value->rating / 2)),
+                            'rating' => round(((int) $value->rating / 2)),
                             'date_added'=> date('Y-m-d H:i:s')
                         );
 
@@ -71,7 +76,7 @@ class Reviews
                 }
             }
 
-            Data::init()->{"reviewStore".Config::getRestKey()} = $added;
+            Data::init()->{"reviewStore" . Config::getRestKey()} = $added;
 
             Data::init()->save();
 

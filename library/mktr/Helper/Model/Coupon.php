@@ -59,19 +59,19 @@ class Coupon
         $data = array_merge(self::$coupon, $data);
 
         Core::query(
-            "INSERT INTO `" . DB_PREFIX . self::getTable() ."` SET".
-            " `name` = '" . Core::escape($data['name']) . "',".
-            " `code` = '" . Core::escape($data['code']) . "',".
-            " `discount` = '" . (float)$data['discount'] . "',".
-            " `type` = '" . Core::escape($data['type']) . "',".
-            " `total` = '" . (float)$data['total'] . "',".
-            " `logged` = '" . (int)$data['logged'] . "',".
-            " `shipping` = '" . (int)$data['shipping'] . "',".
-            " `date_start` = '" . Core::escape($data['date_start']) . "',".
-            " `date_end` = '" . Core::escape($data['date_end']) . "',".
-            " `uses_total` = '" . (int)$data['uses_total'] . "',".
-            " `uses_customer` = '" . (int)$data['uses_customer'] . "',".
-            " `status` = '" . (int)$data['status'] . "',".
+            "INSERT INTO `" . DB_PREFIX . self::getTable() . "` SET" .
+            " `name` = '" . Core::escape($data['name']) . "'," .
+            " `code` = '" . Core::escape($data['code']) . "'," .
+            " `discount` = '" . (float) $data['discount'] . "'," .
+            " `type` = '" . Core::escape($data['type']) . "'," .
+            " `total` = '" . (float) $data['total'] . "'," .
+            " `logged` = '" . (int) $data['logged'] . "'," .
+            " `shipping` = '" . (int) $data['shipping'] . "'," .
+            " `date_start` = '" . Core::escape($data['date_start']) . "'," .
+            " `date_end` = '" . Core::escape($data['date_end']) . "'," .
+            " `uses_total` = '" . (int) $data['uses_total'] . "'," .
+            " `uses_customer` = '" . (int) $data['uses_customer'] . "'," .
+            " `status` = '" . (int) $data['status'] . "'," .
             " `date_added` = NOW()");
 
         self::$asset = Core::lastId();
@@ -81,7 +81,7 @@ class Coupon
 
     public static function checkCode($code) {
         $q = Core::query(
-            "SELECT DISTINCT * FROM ".DB_PREFIX.self::getTable()." WHERE".
+            "SELECT DISTINCT * FROM " . DB_PREFIX . self::getTable() . " WHERE" .
             " code = '" . Core::escape($code) . "' LIMIT 1");
         return !empty($q->num_rows);
     }

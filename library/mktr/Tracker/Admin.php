@@ -31,6 +31,9 @@ trait Admin {
         'catalog/controller/mktr/api/*/before' => array(
             'route'
         ),
+        'catalog/controller/error/not_found/before' => array(
+            'route'
+        ),
         'catalog/view/*/common/header/after' => array(
             'loader'
         ),
@@ -76,7 +79,7 @@ trait Admin {
             if (isset(Core::request()->get['module_id'])) {
                 $set = Module::getModule(Core::request()->get['module_id']);
                 if (isset($set['store_id'])) {
-                    self::$store_id = (int)$set['store_id'];
+                    self::$store_id = (int) $set['store_id'];
                 }
             }
         }
@@ -87,7 +90,7 @@ trait Admin {
             }
         }
 
-        Core::setStoreID((int)self::$store_id);
+        Core::setStoreID((int) self::$store_id);
     }
 
     /** @noinspection PhpUnused */
@@ -102,7 +105,7 @@ trait Admin {
 
             foreach (Store::getStores() as $__) {
                 $id = $__['store_id'];
-                $name = ($__['store_id']).' - '.$__['name'];
+                $name = ($__['store_id']) . ' - ' . $__['name'];
 
                 $data = array(
                     'name' => $name,
@@ -110,7 +113,7 @@ trait Admin {
                 );
 
                 if (isset($st[$id])) {
-                    $data['status'] = (int)$st[$id]['setting']['status'];
+                    $data['status'] = (int) $st[$id]['setting']['status'];
 
                     if ($st[$id]['name'] !== $name) {
                         // $conf->set('module_id', $st[$id]['module_id']);
@@ -121,7 +124,7 @@ trait Admin {
                         }
                     }
                 } else {
-                    $data['status'] = (int)mkConfig::getSettingValue('status',null, $id);
+                    $data['status'] = (int) mkConfig::getSettingValue('status',null, $id);
 
                     if (Config::$addToModule) {
                         $modId = Module::addModule($data);
@@ -186,7 +189,10 @@ trait Admin {
                     /* Cron Settings */
                     'cron_feed' => array(
                         'title'     => 'Activate Cron Feed',
-                        'type'      => 'select'
+                        'type'      => 'select',
+                        'description' => '<b>If Enable, Please Add this to your server Cron Jobs</b><br /><code>0 */1 * * * /usr/bin/php ' .
+                        MKTR_ROOT . 'system/library/mktr/cron.php > /dev/null 2>&1</code><br />OR<br /><code>php ' .
+                        MKTR_ROOT . 'system/library/mktr/cron.php</code>'
                     ),
                     'update_feed' => array(
                         'title'     => 'Cron Update feed every (hours)',
@@ -284,7 +290,7 @@ trait Admin {
             // $data['column_left'] = Core::i()->getChild('common/column_left');
             $data['footer'] = Core::i()->getChild('common/footer');
         }
-        
+
         if (Core::getOcVersion() <= "2.2.9"){
             $cancel = Core::url()->link('extension/module', Core::token() . '&type=module', true);
         } else if (Core::getOcVersion() <= "2.4"){
@@ -292,8 +298,8 @@ trait Admin {
         } else {
             $cancel = Core::url()->link('marketplace/extension', Core::token() . '&type=module', true);
         }
-        
-        $action = Core::url()->link(Core::getLinkCus('mktr_google').'&store_id=' . Core::getStoreID(), Core::token(), true);
+
+        $action = Core::url()->link(Core::getLinkCus('mktr_google') . '&store_id=' . Core::getStoreID(), Core::token(), true);
 
         $data['breadcrumbs'] = array();
 
@@ -319,7 +325,7 @@ trait Admin {
         }
 
         $data['breadcrumbs'][] = array(
-            'name' => Logo::getH1('Google').' >> '.Config::init()->get('store_name'),
+            'name' => Logo::getH1('Google') . ' >> ' . Config::init()->get('store_name'),
             'href' => $action
         );
 
@@ -350,11 +356,11 @@ trait Admin {
             $o = array();
             $c = Core::getOcVersion() >= "4" ? ' class="breadcrumb-item"' : ' ';
             foreach ($data['breadcrumbs'] as $b) {
-                $o[0][] = '<li'.$c.'><a href="' . $b['href'] . '">'.$b['name'].'</a></li>';
+                $o[0][] = '<li' . $c . '><a href="' . $b['href'] . '">' . $b['name'] . '</a></li>';
             }
 
             foreach (Core::getChildren() as $b) {
-                $o[1][] = '<li style="display: inline-block;text-shadow: 0 1px #fff;"><a href="' . $b['href'] . '">'.$b['name'].'</a></li>';
+                $o[1][] = '<li style="display: inline-block;text-shadow: 0 1px #fff;"><a href="' . $b['href'] . '">' . $b['name'] . '</a></li>';
             }
 
             $card = Core::getOcVersion() >= "4" ? ' class="card"' : ' class="panel panel-default"';
@@ -364,42 +370,42 @@ trait Admin {
             $out[] =  '<div id="content">
                 <div class="page-header">
                     <div class="container-fluid">
-                        <div class="'.(Core::getOcVersion() >= "4" ? "float-end" : "pull-right").'">
+                        <div class="' . (Core::getOcVersion() >= "4" ? "float-end" : "pull-right") . '">
                             <button type="submit" form="form-module" data-toggle="tooltip" title="Save" class="btn btn-primary"><i class="fa fa-save"></i></button>
-                            <a href="'.$cancel.'" data-toggle="tooltip" title="Cancel" class="btn btn-default"><i class="fa fa-reply"></i></a>
+                            <a href="' . $cancel . '" data-toggle="tooltip" title="Cancel" class="btn btn-default"><i class="fa fa-reply"></i></a>
                         </div>';
-            $out[] = '<div class="container-fluid"><'.(Core::getOcVersion() >= "4" ? "ol" : "ul").' class="breadcrumb">'.implode("", $o[0]).'</'.(Core::getOcVersion() >= "4" ? "ol" : "ul").'></div></div></div>';
-            $out[] = '<div class="container-fluid"><div'.$card.'><div'.$cardH.'>
+            $out[] = '<div class="container-fluid"><' . (Core::getOcVersion() >= "4" ? "ol" : "ul") . ' class="breadcrumb">' . implode("", $o[0]) . '</' . (Core::getOcVersion() >= "4" ? "ol" : "ul") . '></div></div></div>';
+            $out[] = '<div class="container-fluid"><div' . $card . '><div' . $cardH . '>
         <h3 class="panel-title">Select Store</h3>
-      </div><div'.$cardB.'>'.implode("|",$o[1]).'</div></div>';
+      </div><div' . $cardB . '>' . implode("|",$o[1]) . '</div></div>';
 
             foreach (Form::getNotice() as $value) {
-                $out[] = '<div class="alert alert-'.(isset($value['type']) ? $value['type'] : 'success').' alert-dismissible"><i class="fa '.(isset($value['type']) ? 'fa-exclamation-circle' : 'fa-circle-info').'"></i> '.$value['message'].'<button type="button" class="close" data-dismiss="alert">&times;</button></div>';
+                $out[] = '<div class="alert alert-' . (isset($value['type']) ? $value['type'] : 'success') . ' alert-dismissible"><i class="fa ' . (isset($value['type']) ? 'fa-exclamation-circle' : 'fa-circle-info') . '"></i> ' . $value['message'] . '<button type="button" class="close" data-dismiss="alert">&times;</button></div>';
             }
 
-            $out[] = '<form method="POST" action="'.$action.'" enctype="multipart/form-data" class="form-horizontal" id="form-module">';
-            $out[] = '<div'.$card.'><div'.$cardH.'>
-        <h3 class="panel-title">'.Logo::getText('Main Settings').'</h3>
-      </div><div'.$cardB.'>'.$Form[0].'</div></div>';
+            $out[] = '<form method="POST" action="' . $action . '" enctype="multipart/form-data" class="form-horizontal" id="form-module">';
+            $out[] = '<div' . $card . '><div' . $cardH . '>
+        <h3 class="panel-title">' . Logo::getText('Main Settings') . '</h3>
+      </div><div' . $cardB . '>' . $Form[0] . '</div></div>';
 
-            $out[] = '</form>'.$data['footer'];
+            $out[] = '</form>' . $data['footer'];
         } else {
             $o = array();
             foreach ($data['breadcrumbs'] as $b) {
-                $o[0][] = '<a href="' . $b['href'] . '">'.$b['name'].'</a>';
+                $o[0][] = '<a href="' . $b['href'] . '">' . $b['name'] . '</a>';
             }
 
             foreach (Core::getChildren() as $b) {
-                $o[1][] = '<a style="text-decoration:none" href="' . $b['href'] . '">'.$b['name'].'</a>';
+                $o[1][] = '<a style="text-decoration:none" href="' . $b['href'] . '">' . $b['name'] . '</a>';
             }
             $out[] = '<div id="content">';
-            $out[] = '<div class="breadcrumb">'.implode(" :: ",$o[0]).'</div>';
+            $out[] = '<div class="breadcrumb">' . implode(" :: ",$o[0]) . '</div>';
             $out[] = '<div class="box">
     <div class="heading">
-        <h1>Select Store: '.implode(" :: ",$o[1]).'</h1>
+        <h1>Select Store: ' . implode(" :: ",$o[1]) . '</h1>
         <div class="buttons">
             <a onclick="$(\'#form-module\').submit();" class="button">Save</a>
-            <a href="'.$cancel.'" class="button">Cancel</a>
+            <a href="' . $cancel . '" class="button">Cancel</a>
         </div>
     </div>';
 $out[] = '<div class="content">';
@@ -446,7 +452,7 @@ select.form-control {
 max-width: 728px !important;
 }
 </style>';
-$out[] = '<form method="POST" action="'.$action.'" enctype="multipart/form-data" class="form-horizontal" id="form-module">';
+$out[] = '<form method="POST" action="' . $action . '" enctype="multipart/form-data" class="form-horizontal" id="form-module">';
 $out[] = $Form[0];
 $out[] = '</form>';
 $out[] = '</div>';
@@ -488,8 +494,8 @@ $out[] = '</div>';
         } else {
             $cancel = Core::url()->link('marketplace/extension', Core::token() . '&type=module', true);
         }
-        
-        $action = Core::url()->link(Core::getLink().'&store_id=' . Core::getStoreID(), Core::token(), true);
+
+        $action = Core::url()->link(Core::getLink() . '&store_id=' . Core::getStoreID(), Core::token(), true);
 
         $data['breadcrumbs'] = array();
 
@@ -516,7 +522,7 @@ $out[] = '</div>';
         }
 
         $data['breadcrumbs'][] = array(
-            'name' => Logo::getH1('Tracker').' >> '.Config::init()->get('store_name'),
+            'name' => Logo::getH1('Tracker') . ' >> ' . Config::init()->get('store_name'),
             'href' => $action
         );
 
@@ -536,11 +542,11 @@ $out[] = '</div>';
             $o = array();
             $c = Core::getOcVersion() >= "4" ? ' class="breadcrumb-item"' : ' ';
             foreach ($data['breadcrumbs'] as $b) {
-                $o[0][] = '<li'.$c.'><a href="' . $b['href'] . '">'.$b['name'].'</a></li>';
+                $o[0][] = '<li' . $c . '><a href="' . $b['href'] . '">' . $b['name'] . '</a></li>';
             }
 
             foreach (Core::getChildren() as $b) {
-                $o[1][] = '<li style="display: inline-block;text-shadow: 0 1px #fff;"><a href="' . $b['href'] . '">'.$b['name'].'</a></li>';
+                $o[1][] = '<li style="display: inline-block;text-shadow: 0 1px #fff;"><a href="' . $b['href'] . '">' . $b['name'] . '</a></li>';
             }
 
             $card = Core::getOcVersion() >= "4" ? ' class="card"' : ' class="panel panel-default"';
@@ -550,46 +556,46 @@ $out[] = '</div>';
             $out[] =  '<div id="content">
                 <div class="page-header">
                     <div class="container-fluid">
-                        <div class="'.(Core::getOcVersion() >= "4" ? "float-end" : "pull-right").'">
+                        <div class="' . (Core::getOcVersion() >= "4" ? "float-end" : "pull-right") . '">
                             <button type="submit" form="form-module" data-toggle="tooltip" title="Save" class="btn btn-primary"><i class="fa fa-save"></i></button>
-                            <a href="'.$cancel.'" data-toggle="tooltip" title="Cancel" class="btn btn-default"><i class="fa fa-reply"></i></a>
+                            <a href="' . $cancel . '" data-toggle="tooltip" title="Cancel" class="btn btn-default"><i class="fa fa-reply"></i></a>
                         </div>';
-            $out[] = '<div class="container-fluid"><'.(Core::getOcVersion() >= "4" ? "ol" : "ul").' class="breadcrumb">'.implode("", $o[0]).'</'.(Core::getOcVersion() >= "4" ? "ol" : "ul").'></div></div></div>';
-            $out[] = '<div class="container-fluid"><div'.$card.'><div'.$cardH.'>
+            $out[] = '<div class="container-fluid"><' . (Core::getOcVersion() >= "4" ? "ol" : "ul") . ' class="breadcrumb">' . implode("", $o[0]) . '</' . (Core::getOcVersion() >= "4" ? "ol" : "ul") . '></div></div></div>';
+            $out[] = '<div class="container-fluid"><div' . $card . '><div' . $cardH . '>
         <h3 class="panel-title">Select Store</h3>
-      </div><div'.$cardB.'>'.implode("|",$o[1]).'</div></div>';
+      </div><div' . $cardB . '>' . implode("|",$o[1]) . '</div></div>';
 
             foreach (Form::getNotice() as $value) {
-                $out[] = '<div class="alert alert-'.(isset($value['type']) ? $value['type'] : 'success').' alert-dismissible"><i class="fa '.(isset($value['type']) ? 'fa-exclamation-circle' : 'fa-circle-info').'"></i> '.$value['message'].'<button type="button" class="close" data-dismiss="alert">&times;</button></div>';
+                $out[] = '<div class="alert alert-' . (isset($value['type']) ? $value['type'] : 'success') . ' alert-dismissible"><i class="fa ' . (isset($value['type']) ? 'fa-exclamation-circle' : 'fa-circle-info') . '"></i> ' . $value['message'] . '<button type="button" class="close" data-dismiss="alert">&times;</button></div>';
             }
 
-            $out[] = '<form method="POST" action="'.$action.'" enctype="multipart/form-data" class="form-horizontal" id="form-module">';
-            $out[] = '<div'.$card.'><div'.$cardH.'>
-        <h3 class="panel-title">'.Logo::getText('Main Settings').'</h3>
-      </div><div'.$cardB.'>'.$Form[0].'</div></div>';
+            $out[] = '<form method="POST" action="' . $action . '" enctype="multipart/form-data" class="form-horizontal" id="form-module">';
+            $out[] = '<div' . $card . '><div' . $cardH . '>
+        <h3 class="panel-title">' . Logo::getText('Main Settings') . '</h3>
+      </div><div' . $cardB . '>' . $Form[0] . '</div></div>';
 
-            $out[] = '<div'.$card.'><div'.$cardH.'>
-        <h3 class="panel-title">'.Logo::getText('Attribute Settings').'</h3>
-      </div><div'.$cardB.'>'.$Form[1].'</div></div>';
+            $out[] = '<div' . $card . '><div' . $cardH . '>
+        <h3 class="panel-title">' . Logo::getText('Attribute Settings') . '</h3>
+      </div><div' . $cardB . '>' . $Form[1] . '</div></div>';
 
-            $out[] = '</form>'.$data['footer'];
+            $out[] = '</form>' . $data['footer'];
         } else {
             $o = array();
             foreach ($data['breadcrumbs'] as $b) {
-                $o[0][] = '<a href="' . $b['href'] . '">'.$b['name'].'</a>';
+                $o[0][] = '<a href="' . $b['href'] . '">' . $b['name'] . '</a>';
             }
 
             foreach (Core::getChildren() as $b) {
-                $o[1][] = '<a style="text-decoration:none" href="' . $b['href'] . '">'.$b['name'].'</a>';
+                $o[1][] = '<a style="text-decoration:none" href="' . $b['href'] . '">' . $b['name'] . '</a>';
             }
             $out[] = '<div id="content">';
-            $out[] = '<div class="breadcrumb">'.implode(" :: ",$o[0]).'</div>';
+            $out[] = '<div class="breadcrumb">' . implode(" :: ",$o[0]) . '</div>';
             $out[] = '<div class="box">
     <div class="heading">
-        <h1>Select Store: '.implode(" :: ",$o[1]).'</h1>
+        <h1>Select Store: ' . implode(" :: ",$o[1]) . '</h1>
         <div class="buttons">
             <a onclick="$(\'#form-module\').submit();" class="button">Save</a>
-            <a href="'.$cancel.'" class="button">Cancel</a>
+            <a href="' . $cancel . '" class="button">Cancel</a>
         </div>
     </div>';
 $out[] = '<div class="content">';
@@ -636,7 +642,7 @@ select.form-control {
 max-width: 728px !important;
 }
 </style>';
-$out[] = '<form method="POST" action="'.$action.'" enctype="multipart/form-data" class="form-horizontal" id="form-module">';
+$out[] = '<form method="POST" action="' . $action . '" enctype="multipart/form-data" class="form-horizontal" id="form-module">';
 $out[] = $Form[0];
 $out[] = $Form[1];
 $out[] = '</form>';
@@ -729,7 +735,7 @@ $out[] = '</div>';
             $newOder = array();
             foreach ($data['menus'] as $menu) {
                 $newOder[] = $menu;
-    
+
                 if ($menu['id'] == 'menu-dashboard') {
                     $newOder[] = array(
                         'id' => 'menu-mktr',
@@ -742,18 +748,18 @@ $out[] = '</div>';
             }
             $data['menus'] = $newOder;
         } else {
-            
+
             $chil = '<ul>';
 
             foreach (Core::getChildren() as $key=>$val) {
-                $chil .= '<li><a href="'.$val['href'].'">'.$val['name'].'</a></li>'; 
+                $chil .= '<li><a href="' . $val['href'] . '">' . $val['name'] . '</a></li>'; 
             }
 
             $chil .= '</ul>';
 
             $data['menu'] = str_replace(
                 '<li id="catalog">',
-                '<li id="mktr"><a class="parent"><i class="fa fa-paper-plane fa-fw"></i> <span>'.Logo::getTitle().'</span></a>'.$chil.'</li><li id="catalog">',$data['menu']);
+                '<li id="mktr"><a class="parent"><i class="fa fa-paper-plane fa-fw"></i> <span>' . Logo::getTitle() . '</span></a>' . $chil . '</li><li id="catalog">',$data['menu']);
         }        
     }
 
@@ -780,7 +786,7 @@ $out[] = '</div>';
         if (Core::getOcVersion() >= "2.0"){
             foreach (self::$events as $trigger => $actions) {
                 foreach ($actions as $action) {
-                    $ac = Core::getOcVersion() >= "4" ? Core::getLink().'|'.$action : Core::getLink().'/'.$action;
+                    $ac = Core::getOcVersion() >= "4" ? Core::getLink() . '|' . $action : Core::getLink() . '/' . $action;
                     Events::addEvent(Core::getModuleCode(), $trigger, $ac);
                 }
             }
@@ -818,7 +824,7 @@ $out[] = '</div>';
     public static function uninstallgoogle() {
         if (mkConfig::checkTable()) {
             $conf = Config::init();
-            
+
             $conf->set('google_status', 0);
             $conf->set('google_tracking', '');
             $conf->save();
@@ -831,14 +837,14 @@ $out[] = '</div>';
             } else {
                 $do = Core::i()->model_setting_extension;
             }
-            
+
             $do->uninstall('module', 'mktr_google');
-            
+
             $msg = 'Please install The Marketer - Tracker First';
 
-            
+
             if (Core::getOcVersion() >= "4") {
-                echo json_encode(['error'=> $msg]);
+                echo json_encode(array('error'=> $msg));
                 die();
             } /* else {
                 // Core::i()->session->data['error'] = $msg;
@@ -874,7 +880,7 @@ $out[] = '</div>';
                 Module::deleteModulesByCode(Core::getModuleCode());
             }
         }
-        
+
         mkConfig::drop();
     }
 }

@@ -54,6 +54,6 @@ class setEmail
             Core::setSessionData('setEmail', array());
         }
 
-        return 'console.log('.(int)$allGood.');';
+        return 'console.log(' . (int) $allGood . ');';
     }
 }

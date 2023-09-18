@@ -11,15 +11,15 @@ abstract class DB
     {
         if (isset($this->columns)) {
             $query = array(
-                "CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . $this->table."` ("
+                "CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . $this->table . "` ("
             );
 
             foreach ($this->columns as $key => $value) {
-                $query[] =  "`".$key."` ".$value;
+                $query[] =  "`" . $key . "` " . $value;
             }
 
             if ($this->primary !== null) {
-                $query[] =  "PRIMARY KEY (`".$this->primary."`)";
+                $query[] =  "PRIMARY KEY (`" . $this->primary . "`)";
             }
 
             $query[] = ") ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;";
@@ -31,34 +31,34 @@ abstract class DB
     public function uninstall()
     {
         // drop table
-        Core::query("DROP TABLE IF EXISTS `" . DB_PREFIX . $this->table."`");
+        Core::query("DROP TABLE IF EXISTS `" . DB_PREFIX . $this->table . "`");
     }
 
     public function fixAuto() {
         $query = $this->selectAll();
 
-        Core::query("TRUNCATE TABLE `" . DB_PREFIX .$this->table. "`");
+        Core::query("TRUNCATE TABLE `" . DB_PREFIX . $this->table . "`");
 
         foreach ($query->rows as $v) {
             $q = array();
             foreach ($v as $key => $value) {
                 if ($key !== $this->auto) {
-                    $q[] = "`". $key ."` = '".Core::escape($value) ."'";
+                    $q[] = "`" . $key . "` = '" . Core::escape($value) . "'";
                 }
             }
 
-            $q = "INSERT INTO `" . DB_PREFIX .$this->table. "` SET ".implode(', ', $q);
+            $q = "INSERT INTO `" . DB_PREFIX . $this->table . "` SET " . implode(', ', $q);
             Core::query($q);
         }
     }
 
     public function selectAll($data = null) {
-        $q = "SELECT * FROM `" . DB_PREFIX .$this->table. "`";
+        $q = "SELECT * FROM `" . DB_PREFIX . $this->table . "`";
 
         if ($data !== null) {
             foreach ($data as $key => $value) {
                 if ($key === 'order') {
-                    $q .= " ORDER BY ".$value;
+                    $q .= " ORDER BY " . $value;
                 }
             }
         }

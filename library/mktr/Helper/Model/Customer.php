@@ -63,7 +63,7 @@ class Customer
     }
 
     public static function getByEmail($email) {
-        self::$asset = Core::query("SELECT * FROM `". DB_PREFIX.self::getTable() ."`  WHERE `email` = '".$email."' LIMIT 1")->row;
+        self::$asset = Core::query("SELECT * FROM `" . DB_PREFIX . self::getTable() . "`  WHERE `email` = '" . $email . "' LIMIT 1")->row;
         return self::init();
     }
 }

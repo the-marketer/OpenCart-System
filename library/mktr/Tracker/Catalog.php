@@ -13,10 +13,17 @@ trait Catalog {
     private static $conf = null;
     private static $load = false;
     private static $load2 = false;
+    private static $route = null;
 
     public function __construct($registry) {
         parent::__construct($registry);
         self::init($registry, $this);
+
+        if (isset(Core::request()->get['_route_'])) {
+            self::$route = Core::request()->get['_route_'];
+        } else if (isset(Core::request()->get['route'])) {
+            self::$route = Core::request()->get['route'];
+        }
     }
 
     public static function init($registry, $th){
@@ -35,7 +42,7 @@ trait Catalog {
             return ;
         }
         self::$load = true;
-        $out = Events::google_head(). Events::loader(). Events::loadEvents().
+        $out = Events::google_head() . Events::loader() . Events::loadEvents() .
         // Events::google_body().
         Events::loader_body();
         if (Core::getOcVersion() >= "2.0") {
@@ -46,7 +53,16 @@ trait Catalog {
     }
 
     public static function route($route = null, $data = null) {
+
         if (!Config::getStatus()) {
+            return ;
+        }
+        
+        if (strpos($route, 'mktr/api/') !== false) {
+            
+        } else if (strpos($route, 'not_found') !== false && strpos(self::$route, 'mktr/api/') !== false) {
+            $route = self::$route;
+        } else {
             return ;
         }
 
@@ -79,7 +95,7 @@ trait Catalog {
         }
     }
     public static function links(&$route=null, &$data=null, &$template =null) {
-        
+
     }
     /** @noinspection PhpUnusedParameterInspection */
     public static function loader(&$route, &$data, &$output) {
@@ -94,12 +110,12 @@ trait Catalog {
                 '</body>'
             ),
             array(
-                Events::google_head().
-                Events::loader().
-                Events::loadEvents().
+                Events::google_head() .
+                Events::loader() .
+                Events::loadEvents() .
                 // Events::google_body().
-                Events::loader_body().'</head>',
-               '</body>'
+                Events::loader_body() . '</head>',
+                '</body>'
             ), $output);
     }
 }

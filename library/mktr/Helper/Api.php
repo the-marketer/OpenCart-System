@@ -31,13 +31,13 @@ class Api
     private static $exec = null;
     private static $requestType = null;
     /** @noinspection PhpUnused */
-    public static function send($name, $data = [], $post = true)
+    public static function send($name, $data = array(), $post = true)
     {
         return self::REST(self::$mURL . $name, $data, $post);
     }
 
     /** @noinspection PhpUnused */
-    public static function debug($data = [], $post = true)
+    public static function debug($data = array(), $post = true)
     {
         return self::REST(self::$bURL, $data, $post);
     }
@@ -77,7 +77,7 @@ class Api
         return self::$exec;
     }
 
-    public static function REST($url, $data = [], $post = true)
+    public static function REST($url, $data = array(), $post = true)
     {
         try {
             if (Config::getRestKey() === null) {
@@ -89,10 +89,10 @@ class Api
                 self::$timeOut = 1;
             }
 
-            self::$params = array_merge([
+            self::$params = array_merge(array(
                 'k' => Config::getRestKey(),
                 'u' => Config::getCustomerId()
-            ], $data);
+            ), $data);
 
 
             self::$requestType = $post;
@@ -101,7 +101,7 @@ class Api
             {
                 self::$lastUrl = $url;
             } else {
-                self::$lastUrl = $url .'?'. http_build_query(self::$params);
+                self::$lastUrl = $url . '?' . http_build_query(self::$params);
             }
 
             self::$cURL = \curl_init();

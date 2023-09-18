@@ -17,19 +17,17 @@ class Data
 
     public function __construct()
     {
-        FileSystem::setWorkDirectory();
+        FileSystem::setWorkDirectory('Storage');
         $data = FileSystem::rFile("data.json");
-        if ($data !== '')
-        {
+        if ($data !== '') {
             self::$data = json_decode($data, true);
         } else {
             self::$data = array();
         }
+        self::$init = $this;
     }
     public static function init() {
-        if (self::$init == null) {
-            self::$init = new self();
-        }
+        if (self::$init == null) { new self(); }
         return self::$init;
     }
 
@@ -74,6 +72,7 @@ class Data
 
     public static function save()
     {
+        FileSystem::setWorkDirectory('Storage');
         FileSystem::writeFile("data.json", Valid::toJson(self::$data));
     }
 }

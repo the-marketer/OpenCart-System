@@ -79,7 +79,7 @@ class Category
                 self::$Link = Core::ocConfig('config_url') . 'image/';
             }
         }
-        return self::$Link.$i;
+        return self::$Link . $i;
     }
 
     public static function getImageUrl() {
@@ -114,7 +114,7 @@ class Category
 
             $ids[] = self::getId();
 
-            self::$data['getUrl'] = Core::url()->link('product/category', 'path='.implode('_',$ids));
+            self::$data['getUrl'] = Core::url()->link('product/category', 'path=' . implode('_',$ids));
             if (strpos(self::$data['getUrl'], 'path=') !== false){
                 self::$data['getUrl'] = str_replace('&amp;','&', self::$data['getUrl']);
             }
@@ -132,15 +132,15 @@ class Category
         $offset = (($page - 1) * $limit);
 
         self::$category = Core::query(
-            "SELECT DISTINCT * FROM " . DB_PREFIX . "category c".
-            " LEFT JOIN " . DB_PREFIX . "category_description cd ON (c.category_id = cd.category_id)".
-            " LEFT JOIN " . DB_PREFIX . "category_to_store c2s ON (c.category_id = c2s.category_id)".
-            " WHERE".
-            " cd.language_id = '" . (int)Core::ocConfig('config_language_id') . "'".
-            " AND c2s.store_id = '" . (int)Core::ocConfig('config_store_id') . "'".
-            " AND c.status = '1'".
-            " ORDER BY cd.`category_id` LIMIT ". $limit.
-            " OFFSET ". $offset);
+            "SELECT DISTINCT * FROM " . DB_PREFIX . "category c" .
+            " LEFT JOIN " . DB_PREFIX . "category_description cd ON (c.category_id = cd.category_id)" .
+            " LEFT JOIN " . DB_PREFIX . "category_to_store c2s ON (c.category_id = c2s.category_id)" .
+            " WHERE" .
+            " cd.language_id = '" . (int) Core::ocConfig('config_language_id') . "'" .
+            " AND c2s.store_id = '" . (int) Core::ocConfig('config_store_id') . "'" .
+            " AND c.status = '1'" .
+            " ORDER BY cd.`category_id` LIMIT " . $limit .
+            " OFFSET " . $offset);
 
         return self::$category;
     }

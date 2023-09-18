@@ -35,7 +35,7 @@ class loadEvents
                 {
                     foreach ($eventData as $value)
                     {
-                        $lines[] = "dataLayer.push(".Events::getEvent($Name[1], $value)->toJson().");";
+                        $lines[] = "dataLayer.push(" . Events::getEvent($Name[1], $value)->toJson() . ");";
                     }
                 }
                 Core::setSessionData($event, array());
@@ -43,10 +43,10 @@ class loadEvents
         }
         $c = count($lines);
 
-        $lines [] = 'console.log("Mktr","'.(
+        $lines[] = 'console.log("Mktr","' . (
             $c === 0 ?
-                "No events to Load" : $c." Events Loaded"
-            ).'");';
+                "No events to Load" : $c . " Events Loaded"
+            ) . '");';
 
         return implode(Config::space, $lines);
     }

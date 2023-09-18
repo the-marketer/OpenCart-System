@@ -5,8 +5,9 @@
 
 namespace Mktr\Helper;
 
-use Mktr\Helper\Model\Module;
+use Mktr\Helper\Core;
 use Mktr\Tracker\Observer;
+use Mktr\Helper\Model\Module;
 
 class Form
 {
@@ -54,6 +55,11 @@ class Form
         {
             $fail = false;
             $conf = Config::init();
+            $data = Data::init();
+            $store = $data->store;
+
+            if ($store === null) { $store = array(); }
+
             foreach ($_POST[Core::getModuleCode()] as $key=>$value)
             {
                 if (in_array($key, array('tracking_key', 'rest_key', 'customer_id', 'google_tracking')) && empty($value)) {
@@ -82,15 +88,40 @@ class Form
                     Observer::pushStatus();
                 }
             }
-
+            // $conf->set('VERSION', defined('VERSION') ? VERSION : "3.0");
             $conf->save();
+
+            $url = Core::url()->link(''); $link = array();
+
+            foreach(explode('/', $url) as $k => $v) {
+                if (!strstr($v, 'admin')) { $link[] = $v; }
+            }
+
+            $linkStore = implode('/', $link);
+
+            $store[Core::getStoreID()] = array(
+                'page' => 1,
+                'limit' => 50,
+                'link' => $linkStore,
+                'q' => strstr($linkStore, '?') ? true : false,
+                'store_id' => Core::getStoreID(),
+                'rest_key' => $conf->get('rest_key'),
+                'cron_feed' => (int) $conf->get('cron_feed'),
+                'update_feed' => (int) $conf->get('update_feed'),
+                'cron_review' => (int) $conf->get('cron_review'),
+                'update_review' => (int) $conf->get('update_review'),
+                'update_feed_time' => 0,
+                'update_review_time' => 0
+            );
+
+            $data->store = $store;
+            $data->save();
 
             if ($fail) {
                 self::$notice[] = array(
                     'type' => 'danger',
                     'message'=> 'Please fill are Require(*) fields'
                 );
-
             } else {
                 self::$notice[] =
                     array(
@@ -115,8 +146,8 @@ class Form
         {
             foreach ($value0 as $key => $value) {
 
-                $out[] = '<div'.$form.'>
-    <label class="col-sm-2 control-label" ' . ($value['type'] != 'title' ? ' for="'.Core::getModuleCode().'_'.$key.'"' : '' ) . '>'.$value['title'].'</label>
+                $out[] = '<div' . $form . '>
+    <label class="col-sm-2 control-label" ' . ($value['type'] != 'title' ? ' for="' . Core::getModuleCode() . '_' . $key . '"' : '' ) . '>' . $value['title'] . '</label>
     <div class="col-sm-10">';
 
                 if ($value['type'] !== 'empty' && $value['type'] !== 'title') {
@@ -133,11 +164,11 @@ class Form
                     case 'select':
 
                         $out[] = '<select class="form-control"
-                        name="'.Core::getModuleCode().'['.$key.']" id="'.Core::getModuleCode().'_'.$key.'">';
+                        name="' . Core::getModuleCode() . '[' . $key . ']" id="' . Core::getModuleCode() . '_' . $key . '">';
                         foreach ($value['options'] as $o)
                         {
-                            $out[] = '<option value="'.$o['value'].'" '.( $value['default'] == $o['value'] ?
-                                    'selected="selected" ' : '').'>'.$o['label'].'</option>';
+                            $out[] = '<option value="' . $o['value'] . '" ' . ( $value['default'] == $o['value'] ?
+                                    'selected="selected" ' : '') . '>' . $o['label'] . '</option>';
                         }
                         $out[] = '</select>';
                         break;
@@ -148,18 +179,18 @@ class Form
                         }
                         $out[] = '                    <input class="form-control"
                         type="text"
-                        name="'.Core::getModuleCode().'['.$key.']"
-                        id="'.Core::getModuleCode().'_'.$key.'"
-                        value="'.str_replace('"',"'",$value['default']).'" '.(
+                        name="' . Core::getModuleCode() . '[' . $key . ']"
+                        id="' . Core::getModuleCode() . '_' . $key . '"
+                        value="' . str_replace('"',"'",$value['default']) . '" ' . (
                             $value['holder'] !== '' ?
-                                'placeholder="'.$value['holder'].'" ' : ''
-                            ).'/>';
+                                'placeholder="' . $value['holder'] . '" ' : ''
+                            ) . '/>';
                 }
 
 
                 if ($value['description'] !== '' )
                 {
-                    $out[] = '                    <p class="description">'.$value['description'].'</p>';
+                    $out[] = '                    <p class="description">' . $value['description'] . '</p>';
                 }
 
                 $out[] = '</div></div>';

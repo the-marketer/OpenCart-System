@@ -24,7 +24,7 @@ class Settings
 
         $setting_data = array();
 
-        $query = Core::query("SELECT * FROM `". DB_PREFIX.self::getTable() ."` WHERE `store_id` = '" . (int)$store_id . "' AND ".(Core::getOcVersion() >= "2.0.1" ? "`code`" : "`group`")." = '" . Core::escape($code) . "'");
+        $query = Core::query("SELECT * FROM `" . DB_PREFIX . self::getTable() . "` WHERE `store_id` = '" . (int) $store_id . "' AND " . (Core::getOcVersion() >= "2.0.1" ? "`code`" : "`group`") . " = '" . Core::escape($code) . "'");
 
         foreach ($query->rows as $result) {
             if (!$result['serialized']) {
@@ -50,7 +50,7 @@ class Settings
             $code = Core::getCode();
         }
 
-        $query = Core::query("SELECT * FROM `". DB_PREFIX.self::getTable() ."` WHERE `store_id` = '" . (int)$store_id . "' AND ".(Core::getOcVersion() >= "2.0.1" ? "`code`" : "`group`")." = '" . Core::escape($code) . "'");
+        $query = Core::query("SELECT * FROM `" . DB_PREFIX . self::getTable() . "` WHERE `store_id` = '" . (int) $store_id . "' AND " . (Core::getOcVersion() >= "2.0.1" ? "`code`" : "`group`") . " = '" . Core::escape($code) . "'");
 
         $find = array();
 
@@ -60,17 +60,17 @@ class Settings
 
         foreach ($data as $key => $value) {
             if (substr($key, 0, strlen($code)) != $code) {
-                $key = $code.'_'.$key;
+                $key = $code . '_' . $key;
             }
 
             $check = isset($find[$key]);
             if ($check) {
-                $q = "UPDATE `". DB_PREFIX.self::getTable() ."` SET";
+                $q = "UPDATE `" . DB_PREFIX . self::getTable() . "` SET";
             } else {
-                $q = "INSERT INTO `". DB_PREFIX.self::getTable() ."` SET";
+                $q = "INSERT INTO `" . DB_PREFIX . self::getTable() . "` SET";
             }
 
-            $q .= " `store_id` = '" . (int)$store_id . "', ".(Core::getOcVersion() >= "2.0.1" ? "`code`" : "`group`")." = '" . Core::escape($code) . "', `key` = '" . Core::escape($key) . "',";
+            $q .= " `store_id` = '" . (int) $store_id . "', " . (Core::getOcVersion() >= "2.0.1" ? "`code`" : "`group`") . " = '" . Core::escape($code) . "', `key` = '" . Core::escape($key) . "',";
 
             if (!is_array($value)) {
                 $q .= " `value` = '" . Core::escape($value) . "', `serialized` = '0'";
@@ -80,7 +80,7 @@ class Settings
             }
 
             if ($check) {
-                $q .= " WHERE `setting_id` = '".Core::escape($find[$key])."'";
+                $q .= " WHERE `setting_id` = '" . Core::escape($find[$key]) . "'";
             }
 
             Core::query($q);
@@ -93,7 +93,7 @@ class Settings
             $store_id = Core::getStoreID();
         }
 
-        $query = Core::query("SELECT * FROM `". DB_PREFIX.self::getTable() ."` WHERE `store_id` = '" . (int)$store_id . "' AND `key` = '" . Core::escape($key) . "' LIMIT 1");
+        $query = Core::query("SELECT * FROM `" . DB_PREFIX . self::getTable() . "` WHERE `store_id` = '" . (int) $store_id . "' AND `key` = '" . Core::escape($key) . "' LIMIT 1");
 
         if ($query->num_rows) {
             if ($query->row['serialized']) {
@@ -114,10 +114,10 @@ class Settings
     }
 
     public static function getSetValue($key) {
-        if (!Core::i()->has($key."_value")) {
-            Core::i()->set($key."_value", self::getSettingValue($key));
+        if (!Core::i()->has($key . "_value")) {
+            Core::i()->set($key . "_value", self::getSettingValue($key));
         }
-        Core::i()->get($key."_value");
+        Core::i()->get($key . "_value");
     }
 
     public static function getSettingValue($key, $store_id = 0) {
@@ -125,7 +125,7 @@ class Settings
             $store_id = Core::getStoreID();
         }
 
-        $query = Core::query("SELECT * FROM `". DB_PREFIX.self::getTable() ."` WHERE `store_id` = '" . (int)$store_id . "' AND `key` = '" . Core::escape($key) . "' LIMIT 1");
+        $query = Core::query("SELECT * FROM `" . DB_PREFIX . self::getTable() . "` WHERE `store_id` = '" . (int) $store_id . "' AND `key` = '" . Core::escape($key) . "' LIMIT 1");
 
         if ($query->num_rows) {
             if ($query->row['serialized']) {
@@ -141,6 +141,6 @@ class Settings
 
     /** @noinspection PhpUnused */
     public static function deleteSetting($code, $store_id = null) {
-        Core::query("DELETE FROM `". DB_PREFIX.self::getTable() ."` WHERE ".($store_id !== null ? "store_id = '" . (int)$store_id . "' AND ":"").(Core::getOcVersion() >= "2.0.1" ? "`code`" : "`group`")." = '" . Core::escape($code) . "'");
+        Core::query("DELETE FROM `" . DB_PREFIX . self::getTable() . "` WHERE " . ($store_id !== null ? "store_id = '" . (int) $store_id . "' AND ":"") . (Core::getOcVersion() >= "2.0.1" ? "`code`" : "`group`") . " = '" . Core::escape($code) . "'");
     }
 }

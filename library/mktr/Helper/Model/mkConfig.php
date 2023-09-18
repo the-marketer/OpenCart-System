@@ -48,11 +48,11 @@ class mkConfig extends DB
         $is = true;
 
         try {
-            Core::query("SELECT * FROM `". DB_PREFIX.self::getTable() ."` LIMIT 1");
+            Core::query("SELECT * FROM `" . DB_PREFIX . self::getTable() . "` LIMIT 1");
         } catch (\Exception $e) {
             $is = false;
         }
-        
+
         return $is;
     }
 
@@ -64,7 +64,7 @@ class mkConfig extends DB
 
         $setting_data = array();
 
-        $query = Core::query("SELECT * FROM `". DB_PREFIX.self::getTable() ."` WHERE `store_id` = '" . (int)$store_id . "'");
+        $query = Core::query("SELECT * FROM `" . DB_PREFIX . self::getTable() . "` WHERE `store_id` = '" . (int) $store_id . "'");
 
         foreach ($query->rows as $result) {
             if (!$result['serialized']) {
@@ -86,7 +86,7 @@ class mkConfig extends DB
             $store_id = Core::getStoreID();
         }
 
-        $query = Core::query("SELECT * FROM `". DB_PREFIX.self::getTable() ."` WHERE `store_id` = '" . (int)$store_id . "'");
+        $query = Core::query("SELECT * FROM `" . DB_PREFIX . self::getTable() . "` WHERE `store_id` = '" . (int) $store_id . "'");
 
         $find = array();
 
@@ -97,12 +97,12 @@ class mkConfig extends DB
         foreach ($data as $key => $value) {
             $check = isset($find[$key]);
             if ($check) {
-                $q = "UPDATE `". DB_PREFIX.self::getTable() ."` SET";
+                $q = "UPDATE `" . DB_PREFIX . self::getTable() . "` SET";
             } else {
-                $q = "INSERT INTO `". DB_PREFIX.self::getTable() ."` SET";
+                $q = "INSERT INTO `" . DB_PREFIX . self::getTable() . "` SET";
             }
 
-            $q .= " `store_id` = '" . (int)$store_id . "', `key` = '" . Core::escape($key) . "',";
+            $q .= " `store_id` = '" . (int) $store_id . "', `key` = '" . Core::escape($key) . "',";
 
             if (!is_array($value)) {
                 $q .= " `value` = '" . Core::escape($value) . "', `serialized` = '0'";
@@ -112,7 +112,7 @@ class mkConfig extends DB
             }
 
             if ($check) {
-                $q .= " WHERE `setting_id` = '".Core::escape($find[$key])."'";
+                $q .= " WHERE `setting_id` = '" . Core::escape($find[$key]) . "'";
             }
 
             Core::query($q);
@@ -125,7 +125,7 @@ class mkConfig extends DB
             $store_id = Core::getStoreID();
         }
 
-        $query = Core::query("SELECT * FROM `". DB_PREFIX.self::getTable() ."` WHERE `store_id` = '" . (int)$store_id . "' AND `key` = '" . Core::escape($key) . "'");
+        $query = Core::query("SELECT * FROM `" . DB_PREFIX . self::getTable() . "` WHERE `store_id` = '" . (int) $store_id . "' AND `key` = '" . Core::escape($key) . "'");
 
         if ($query->num_rows) {
             if ($query->row['serialized']) {
@@ -143,7 +143,7 @@ class mkConfig extends DB
             $store_id = Core::getStoreID();
         }
 
-        $query = Core::query("SELECT * FROM `". DB_PREFIX.self::getTable() ."` WHERE `store_id` = '" . (int)$store_id . "' AND `key` = '" . Core::escape($key) . "' LIMIT 1");
+        $query = Core::query("SELECT * FROM `" . DB_PREFIX . self::getTable() . "` WHERE `store_id` = '" . (int) $store_id . "' AND `key` = '" . Core::escape($key) . "' LIMIT 1");
 
         if ($query->num_rows) {
             if ($query->row['serialized']) {
@@ -162,6 +162,6 @@ class mkConfig extends DB
         if ($store_id === null) {
             $store_id = Core::getStoreID();
         }
-        Core::query("DELETE FROM `". DB_PREFIX.self::getTable() ."` WHERE store_id = '" . (int)$store_id . "'");
+        Core::query("DELETE FROM `" . DB_PREFIX . self::getTable() . "` WHERE store_id = '" . (int) $store_id . "'");
     }
 }

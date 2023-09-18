@@ -53,14 +53,14 @@ class Reviews
     public static function addReview($data) {
         $data = array_merge(self::$review, $data);
 
-        Core::query("INSERT INTO `". DB_PREFIX . self::getTable() ."` SET".
-        " `author` = '". Core::escape($data['author']) ."',".
-        " `customer_id` = '".(int)$data['customer_id'] ."',".
-        " `product_id` = '". (int)$data['product_id'] ."',".
-        " `text` = '". Core::escape($data['text']) ."',".
-        " `rating` = '". (int)$data['rating'] ."',".
-        " `status` = '". (int)$data['status'] ."',".
-        " `date_added` = '". Core::escape($data['date_added']) ."'");
+        Core::query("INSERT INTO `" . DB_PREFIX . self::getTable() . "` SET" .
+        " `author` = '" . Core::escape($data['author']) . "'," .
+        " `customer_id` = '" . (int) $data['customer_id'] . "'," .
+        " `product_id` = '" . (int) $data['product_id'] . "'," .
+        " `text` = '" . Core::escape($data['text']) . "'," .
+        " `rating` = '" . (int) $data['rating'] . "'," .
+        " `status` = '" . (int) $data['status'] . "'," .
+        " `date_added` = '" . Core::escape($data['date_added']) . "'");
 
         self::$asset = Core::lastId();
 

@@ -1,4 +1,5 @@
 # Implemented
+```
 mktr/api/Feed?key={RestAPI}
 mktr/api/Category?key={RestAPI}
 mktr/api/Brands?key={RestAPI}
@@ -28,7 +29,11 @@ mktr/api/Reviews?key={RestAPI}&start_date=2000-01-01
 &mime-type=js
 &mime-type=json
 &mime-type=xml
-
+```
+# Cron Command
+```shell
+php {PAHT_TO_STORE}/system/library/mktr/cron.php
+```
 # Page
 &page=4
 

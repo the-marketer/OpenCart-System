@@ -43,38 +43,38 @@ class Cron
         $data = Data::init();
         $upFeed = $data->update_feed;
         $upReview = $data->update_review;
-        
+
         if (Config::getStatus() != 0) {
 
             if (Config::getCronFeed() != 0 && $upFeed < time()) {
 
                 $run = Feed::init();
-                
+
                 $run->execute();
 
-                $fileName = $run->get('fileName').".".Valid::getParam('mime-type', Config::defMime);
+                $fileName = $run->get('fileName') . "." . Valid::getParam('mime-type', Config::defMime);
 
-                Valid::Output($run->get('fileName'), array( $run->get('secondName') => $run->execute()));
-                
+                Valid::Output($run->get('fileName'), array($run->get('secondName') => $run->execute()));
+
                 FileSystem::writeFile($fileName, Valid::getOutPut());
 
-                $data->update_feed = strtotime("+".Config::getUpdateFeed()." hour");
+                $data->update_feed = strtotime("+" . Config::getUpdateFeed() . " hour");
             }
 
             if (Config::getCronReview() != 0 && $upReview < time()) {
 
                 Reviews::execute();
 
-                $data->update_review = strtotime("+".Config::getUpdateReview()." hour");
+                $data->update_review = strtotime("+" . Config::getUpdateReview() . " hour");
             }
             $data->save();
         }
 
-        $get = array( "cron"=>
+        $get = array("cron"=>
                 array(
-                'update_feed' => $data->update_feed,
-                'update_review' => $data->update_review
-            )
+                    'update_feed' => $data->update_feed,
+                    'update_review' => $data->update_review
+                )
         );
         return $get;
     }

@@ -395,7 +395,7 @@ class Observer
     private static function SessionSet($key = null)
     {
         $add = Core::getSessionData(self::$eventName);
-        
+
         if ($add === false) { $add = array(); }
 
         if ($key === null) {

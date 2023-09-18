@@ -43,8 +43,9 @@ class Valid
         {
             return self::$params[$name];
         }
-
-        self::$params[$name] = $def;
+        if ($def !== null) {
+            self::$params[$name] = $def;
+        }
         return $def;
     }
 
@@ -110,43 +111,43 @@ class Valid
                             case "Required":
                                 if (!isset(self::$params[$k]))
                                 {
-                                    self::$error = "Missing Parameter ". $k;
+                                    self::$error = "Missing Parameter " . $k;
                                 }
                                 break;
                             case "DateCheck":
                                 if (isset(self::$params[$k]) && !self::validateDate(self::$params[$k]))
                                 {
-                                    self::$error = "Incorrect Date ".
-                                        $k." - ".
-                                        self::$params[$k] . " - ".
+                                    self::$error = "Incorrect Date " .
+                                        $k . " - " .
+                                        self::$params[$k] . " - " .
                                         Config::$dateFormat;
                                 }
                                 break;
                             case "StartDate":
                                 if (isset(self::$params[$k]) && strtotime(self::$params[$k]) > \time())
                                 {
-                                    self::$error = "Incorrect Start Date ".
-                                        $k." - ".
-                                        self::$params[$k] . " - Today is ".
+                                    self::$error = "Incorrect Start Date " .
+                                        $k . " - " .
+                                        self::$params[$k] . " - Today is " .
                                         date(Config::$dateFormat, \time());
                                 }
                                 break;
                             case "Key":
                                 if (isset(self::$params[$k]) && self::$params[$k] !== Config::getRestKey())
                                 {
-                                    self::$error = "Incorrect REST API Key ". self::$params[$k];
+                                    self::$error = "Incorrect REST API Key " . self::$params[$k];
                                 }
                                 break;
                             case "RuleCheck":
                                 if (isset(self::$params[$k]) && Config::getDiscountRules(self::$params[$k]) === null)
                                 {
-                                    self::$error = "Incorrect Rule Type ". self::$params[$k];
+                                    self::$error = "Incorrect Rule Type " . self::$params[$k];
                                 }
                                 break;
                             case "Int":
                                 if (isset(self::$params[$k]) && !is_numeric(self::$params[$k]))
                                 {
-                                    self::$error = "Incorrect Value ". self::$params[$k];
+                                    self::$error = "Incorrect Value " . self::$params[$k];
                                 }
                                 break;
                             case "allow_export":
@@ -179,7 +180,7 @@ class Valid
     public static function Output($data, $data1 = null, $name = null) {
         $mi = self::getParam('mime-type', Config::defMime);
 
-        header("Content-type: ".self::$mime[$mi]."; charset=utf-8");
+        header("Content-type: " . self::$mime[$mi] . "; charset=utf-8");
 
         self::$getOut = "";
 

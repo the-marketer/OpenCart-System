@@ -102,7 +102,7 @@ class Core
             case "ocModel":
                 if (!isset(self::$loaded[$arg[0]])) {
                     self::$init->load->model($arg[0]);
-                    self::$loaded[$arg[0]] = self::$init->{"model_".str_replace('/','_', $arg[0])};
+                    self::$loaded[$arg[0]] = self::$init->{"model_" . str_replace('/','_', $arg[0])};
                 }
                 $send = self::$loaded[$arg[0]];
                 break;
@@ -144,14 +144,14 @@ class Core
     }
 
     public static function getSessionData($name = null) {
-        if (isset(Core::session()->data['Mktr_'.$name])) {
-            return Core::session()->data['Mktr_'.$name];
+        if (isset(Core::session()->data['Mktr_' . $name])) {
+            return Core::session()->data['Mktr_' . $name];
         }
         return array();
     }
 
     public static function setSessionData($name, $value) {
-        Core::session()->data['Mktr_'.$name] = $value;
+        Core::session()->data['Mktr_' . $name] = $value;
         return self::$init;
     }
 
@@ -163,7 +163,7 @@ class Core
     }
 
     public static function setStoreID($id = null) {
-        self::$storeID = $id === null ? (int)Core::ocConfig('config_store_id', 0) : $id;
+        self::$storeID = $id === null ? (int) Core::ocConfig('config_store_id', 0) : $id;
         return self::$init;
     }
 
@@ -180,11 +180,11 @@ class Core
 
     /** @noinspection PhpUnused */
     public static function getCode() {
-        return Core::getOcVersion() >= '3.0' ? 'module_'.Config::$code : Config::$code;
+        return Core::getOcVersion() >= '3.0' ? 'module_' . Config::$code : Config::$code;
     }
 
     public static function getCodeCus($code) {
-        return Core::getOcVersion() >= '3.0' ? 'module_'.$code : $code;
+        return Core::getOcVersion() >= '3.0' ? 'module_' . $code : $code;
     }
 
     /** @noinspection PhpUnused */
@@ -199,12 +199,12 @@ class Core
 
     /** @noinspection PhpUnused */
     public static function getLink() {
-        return self::getControllerPath().'/'.self::getModuleCode();
+        return self::getControllerPath() . '/' . self::getModuleCode();
     }
 
     /** @noinspection PhpUnused */
     public static function getLinkCus($code) {
-        return self::getControllerPath().'/'.$code;
+        return self::getControllerPath() . '/' . $code;
     }
 
 
@@ -216,7 +216,7 @@ class Core
                 self::$children[] = array(
                     'name' => $store['name'],
                     'children' => array(),
-                    'href' => Core::url()->link(Core::getLink(), 'store_id=' . $store['store_id'] . '&'.Core::token(), true)
+                    'href' => Core::url()->link(Core::getLink(), 'store_id=' . $store['store_id'] . '&' . Core::token(), true)
                 );
             }
         }

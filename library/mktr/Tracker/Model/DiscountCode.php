@@ -71,7 +71,7 @@ class DiscountCode
         $coupon['date_end'] =
             $expiration === null ?
                 date('Y-m-d', strtotime('+1 year')) : $expiration;
-        $coupon['name'] = self::DESCRIPTION." (".$type."-".$value.( $expiration === null ? '' : '-'.$expiration).")";
+        $coupon['name'] = self::DESCRIPTION . " (" . $type . "-" . $value . ( $expiration === null ? '' : '-' . $expiration) . ")";
 
         Coupon::addCoupon($coupon);
 
