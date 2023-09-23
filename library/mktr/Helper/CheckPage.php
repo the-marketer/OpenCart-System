@@ -32,6 +32,7 @@ class CheckPage
             'checkout/ajaxquickcheckout',
             'checkout/ajaxcheckout',
             'checkout/quickcheckout',
+            'quick_checkout/checkout',
             'checkout/onepagecheckout',
             'supercheckout/supercheckout',
             'quickcheckout/cart',
@@ -59,7 +60,9 @@ class CheckPage
 
     public static function current_page() {
         if (self::$current_page === null) {
-            self::$current_page = isset(Core::request()->get['route']) ? Core::request()->get['route'] : '';
+            self::$current_page = 
+                isset(Core::request()->get['route']) ? Core::request()->get['route'] :
+                    ( isset(Core::request()->get['_route_']) ? Core::request()->get['_route_'] : '' );
         }
         return self::$current_page;
     }
