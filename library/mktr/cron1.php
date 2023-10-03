@@ -27,7 +27,7 @@ class Cron {
 
 	public function __construct() {
 		$this->data = \Mktr\Helper\Data::init();
-		$this->DataStorage = \Mktr\Helper\DataStorage::init('DataStorage');
+		$this->DataStorage = new \Mktr\Helper\DataStorage('DataStorage');
 		$this->store = $this->data->store;
 		$this->storeData = $this->DataStorage->storeData;
 		if ($this->storeData === null) { $this->storeData = array(); }
@@ -53,7 +53,7 @@ class Cron {
 
 	public function run($store) {
 		$time = time();
-
+		$saveLimit = $store['limit'];
 		$store['limit'] = 1;
 		if ($store['cron_feed'] == 1 && $store['update_feed_time'] < $time) {
 			$run = true;
@@ -115,6 +115,7 @@ class Cron {
 			$store['update_review_time'] = strtotime("+" . $store['update_review'] . " hour");
 			$status = true;
 		}
+		$store['limit'] = $saveLimit;
 		return array($store, $status);
 	}
 
