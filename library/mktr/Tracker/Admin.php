@@ -190,8 +190,9 @@ trait Admin {
                     'cron_feed' => array(
                         'title'     => 'Activate Cron Feed',
                         'type'      => 'select',
-                        'description' => '<b>If Enable, Please Add this to your server Cron Jobs</b><br /><code>0 */1 * * * /usr/bin/php ' .
-                        MKTR_ROOT . 'system/library/mktr/cron.php > /dev/null 2>&1</code><br />OR<br /><code>php ' .
+                        'description' => '<b>If Enable, Please Add this to your server Cron Jobs</b><br /><code>0 * * * * /usr/bin/php ' .
+                        MKTR_ROOT . 'system/library/mktr/cron.php > ' .
+                        MKTR_ROOT . 'system/library/mktr/cron.log 2>&1</code><br />OR<br /><code>php ' .
                         MKTR_ROOT . 'system/library/mktr/cron.php</code>'
                     ),
                     'update_feed' => array(

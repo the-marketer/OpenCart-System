@@ -8,9 +8,12 @@ if (is_file($dir . 'Helper/Array2XML.php')) {
 	require_once($dir . 'Helper/FileSystem.php');
 	require_once($dir . 'Helper/Array2XML.php');
 	require_once($dir . 'Helper/Data.php');
+	// require_once($dir . 'Helper/DataStorage.php');
 	require_once($dir . 'Helper/Valid.php');
 }
 $data = \Mktr\Helper\Data::init();
+
+// $left = \Mktr\Helper\DataStorage::init('left');
 $store = $data->store;
 $status = false;
 
