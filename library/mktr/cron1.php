@@ -54,7 +54,7 @@ class Cron {
 	public function run($store) {
 		$time = time();
 		$saveLimit = $store['limit'];
-		$store['limit'] = 1;
+		$store['limit'] = 5;
 		if ($store['cron_feed'] == 1 && $store['update_feed_time'] < $time) {
 			$run = true;
 
@@ -124,7 +124,7 @@ class Cron {
 		$start = $end - $store['limit'];
 
 		while ($start<=$end) {
-			$url = $store['link'] . 'mktr/api/feed' . ($store['q'] ? '&' : '?') . 'key=' . $store['rest_key'] . '&page=' . $start . '&limit=1&mime-type=json&t=' . time();
+			$url = $store['link'] . 'mktr/api/feed' . ($store['q'] ? '&' : '?') . 'key=' . $store['rest_key'] . '&page=' . $start . '&limit=1&no_save=1&mime-type=json&t=' . time();
 			$content = @file_get_contents($url);
 			
 			if ($content !== false) {
