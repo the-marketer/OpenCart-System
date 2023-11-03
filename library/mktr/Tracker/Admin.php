@@ -21,9 +21,15 @@ trait Admin {
         'admin/view/common/column_left/before' => array(
             'links'
         ),
-        'catalog/controller/api/order/edit/before' => array(
+        'admin/controller/api/order/*/before' => array(
             'observer'
         ),
+        'catalog/controller/api/order/history/before' => array(
+            'observer'
+        ),
+        //'catalog/controller/api/order/edit/before' => array(
+        //    'observer'
+        //),
         'admin/controller/sale/order|call/before' => array(
             'observer'
         ),

@@ -31,6 +31,7 @@ class Observer
         'checkout/success' => 'saveOrder',
         'account/newsletter' => 'RegisterOrLogIn',
         'api/order/edit' => 'orderUp',
+        'api/order/history' => 'orderUp',
         'sale/order/history' => 'orderUp',
         'sale/order|call' => 'orderUp',
         'api/order|edit' => 'orderUp',
@@ -146,6 +147,7 @@ class Observer
                     case 'api/order|edit':
                     case 'api/order/edit':
                     case 'sale/order|call':
+                    case 'api/order/history':
                     case 'sale/order/history':
                         if (isset(Core::request()->post['order_status_id'])) {
                             $oId = Core::request()->get['order_id'];
