@@ -59,7 +59,7 @@ class Product
         'special_price' => 'special',
         'sale_price_start_date' => 'getSalePriceStartDate',
         'sale_price_end_date' => 'getSalePriceEndDate',
-        'availability' => 'getStockStatus',
+        'availability' => 'getAvailability',
         'stock' => 'getQuantity',
         'media_gallery' => 'getMediaGallery',
         'variation' => 'getVariation',
@@ -200,6 +200,10 @@ class Product
         return self::init();
     }
 
+    public static function getAvailability() {
+        return self::checkAvailability(self::getQuantity(), self::getStockStatus());
+    }
+
     /** @noinspection PhpUnused */
     public static function getStockStatus() {
         switch (self::$asset['stock_status']) {
@@ -207,6 +211,8 @@ class Product
                 return 0;
             case 'In Stock':
                 return 1;
+            case '2-3 Days':
+            case 'Pre-Order':
             default:
                 return 2;
         }
@@ -297,7 +303,7 @@ class Product
 
         return self::$data['getUrl'];
     }
-
+    
     public static function getImage() {
         return self::imageUrl(self::getValue('image'));
     }
@@ -323,6 +329,19 @@ class Product
         return true;
     }
 
+    public static function ProductBuild($key1, $prevKey) {
+        $products = array();
+
+        foreach ($prevKey as $prevArray) {
+            foreach ($key1 as $cValue) {
+                $prevArrayNew = array_merge($prevArray , array($cValue));
+                $products[] = $prevArrayNew;
+            }
+        }
+        return $products;
+    }
+
+
     public static function buildCombinations($attributes, $prefix = []) {
         $combinations = [];
         $attributeKey = key($attributes);
@@ -338,10 +357,28 @@ class Product
         return $combinations;
     }
 
+    public static function checkAvailability($stock = null, $status = null)
+    {
+        $is = 0;
+        if ($stock < 0) {
+            $is = Config::getDefaultStock();
+        } else if ($status && ($stock === null || $stock == 0)) {
+            $is = 2;
+        } else if ($status || $stock > 0){
+            $is = 1;
+        } else {
+            $is = 0;
+        }
+        return $is;
+    }
+
     /** @noinspection PhpUnused */
     public static function getVariation($byID = null) {
         if (!isset(self::$data['getVariation']) || isset(self::$data['getVariation']) && $byID !== null && self::$data['byID'] !== $byID) {
             $added = [];
+            $optionList = array();
+            $products = array(array());
+
             if ($byID === null) {
                 $byID = false;
             }
@@ -390,7 +427,7 @@ class Product
             if (count($newAttr) > 15) {
                 $newAttr = array_slice($newAttr, 0, 15);
             }
-            // self::dd($newAttr);
+
             if (!empty($newAttr) && is_array($newAttr)) {
                 $products = self::buildCombinations($newAttr);
                 foreach ($products as $key => $value) {
@@ -404,6 +441,7 @@ class Product
             }
 
             $variation = array();
+
             $colorAttr = Config::getColorAttribute();
             $sizeAttr = Config::getSizeAttribute();
 
@@ -421,10 +459,13 @@ class Product
                     'size' => null,
                     'color' => null
                 );
+
                 if ($newVariation['sale_price'] == null) {
                     $newVariation['sale_price'] = $newVariation['price'];
                 }
+
                 $skip = false;
+
                 foreach ($val as $val0) {
                     if (in_array($val0['name'], $newVariation['sku']) || $skip) {
                         $skip = true;
@@ -479,6 +520,9 @@ class Product
                 $newVariation['sku'] = str_replace(' ', '_', $newVariation['sku']);
 
                 $added[] = $newVariation['id'];
+                if (in_array($newVariation['id'], $added)) {
+                    continue;
+                }
 
                 $newVariation['price'] = Core::i()->tax->calculate(
                     (float) $newVariation['price'],
@@ -499,7 +543,7 @@ class Product
                     $newVariation['sale_price'] = Valid::digit2($newVariation['sale_price']);
                 }
 
-                $newVariation['availability'] = self::availability();
+                $newVariation['availability'] = self::checkAvailability($newVariation['stock'], self::getStockStatus());
 
                 if (empty($newVariation['size'])) {
                     unset($newVariation['size']);

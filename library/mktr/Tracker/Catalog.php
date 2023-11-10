@@ -19,11 +19,14 @@ trait Catalog {
         parent::__construct($registry);
         self::init($registry, $this);
 
-        if (isset(Core::request()->get['_route_'])) {
-            self::$route = Core::request()->get['_route_'];
-        } else if (isset(Core::request()->get['route'])) {
+        if (array_key_exists('route', Core::request()->get)) {
             self::$route = Core::request()->get['route'];
         }
+        /*
+        else if (array_key_exists('_route_', Core::request()->get)) {
+            self::$route = Core::request()->get['_route_'];
+        }
+        */
     }
 
     public static function init($registry, $th){
@@ -43,11 +46,9 @@ trait Catalog {
             return ;
         }
         
-        if (strpos($route, 'mktr/api/') !== false) {
-            
-        } else if (strpos($route, 'not_found') !== false && strpos(self::$route, 'mktr/api/') !== false) {
+        if ($route === 'error/not_found' && strstr(self::$route, 'mktr/api/') !== false) {
             $route = self::$route;
-        } else {
+        } else if (strstr($route, 'mktr/api/') === false) {
             return ;
         }
 
@@ -106,16 +107,12 @@ trait Catalog {
         self::$load = true;
 
         $output = str_replace(
-            array('</head>',
-                '</body>'
-            ),
-            array(
-                Events::google_head() .
+            array( '</head>', '</body>' ),
+            array( Events::google_head() .
                 Events::loader() .
                 Events::loadEvents() .
                 // Events::google_body().
                 Events::loader_body() . '</head>',
-                '</body>'
-            ), $output);
+                '</body>' ), $output);
     }
 }

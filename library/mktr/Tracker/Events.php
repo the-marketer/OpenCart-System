@@ -179,8 +179,8 @@ class Events
         var f = d.getElementsByTagName(s)[0], j = d.createElement(s);j.async = true;
         j.src = "https://t.themarketer.com/t/j/" + i; f.parentNode.insertBefore(j, f);
     })(document, "script", "' . Config::getKey() . '");';
-
-        $lines[] = 'window.MktrDebug = function () { if (typeof dataLayer != undefined) { for (let i of dataLayer) { console.log("Mktr","Google",i); } } };';
+        $lines[] = 'window.mktr = window.mktr || {};';
+        $lines[] = 'window.mktr.debug = function () { if (typeof dataLayer != undefined) { for (let i of dataLayer) { console.log("Mktr","Google",i); } } };';
         $lines[] = '';
         $wh =  array(Config::space, implode(Config::space, $lines));
         $rep = array("%space%", "%implode%");
@@ -227,15 +227,16 @@ class Events
 
         //$baseURL = Config::getBaseURL();
 
+        $linkVar =  Core::url()->link('mktr/api/', '', true);
+
         foreach ($loadJS as $k=>$v)
         {
-            $lines[] = '(function(){ let add = document.createElement("script"); add.async = true; add.src = "' . Core::url()->link('mktr/api/' . $k . '/') . '"; let s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(add,s); })();';
+            $lines[] = '(function(){ let add = document.createElement("script"); add.async = true; add.src = "' . $linkVar . $k . '/"; add.src = add.src + (add.src.includes("?") ?  "&" : "?") + "mktr_time="+(new Date()).getTime(); let s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(add,s); })();';
         }
 
         if (!empty($clear)) {
             Core::setSessionData("ClearMktr", $clear);
-
-            $lines[] = '(function(){ let add = document.createElement("script"); add.async = true; add.src = "' . Core::url()->link('mktr/api/clearEvents/') . '"; let s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(add,s); })();';
+            $lines[] = '(function(){ let add = document.createElement("script"); add.async = true; add.src = "' . $linkVar . 'clearEvents/"; add.src = add.src + (add.src.includes("?") ?  "&" : "?") + "mktr_time="+(new Date()).getTime(); let s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(add,s); })();';
         }
 
         //$lines[] = 'setTimeout(window.MktrDebug, 1000);';
@@ -275,7 +276,7 @@ window.addEventListener("click", function(event){
     if (event.target.matches("' . str_replace('"','\"',Config::getSelectors()) . '")) {
         setTimeout(function(){
             (function(){
-                let add = document.createElement("script"); add.async = true; add.src = "' . Core::url()->link('mktr/api/LoadEvents/') . '"; let s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(add,s);
+                let add = document.createElement("script"); add.async = true; add.src = "' . Core::url()->link('mktr/api/LoadEvents/', '', true) . '"; let s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(add,s);
             })();
         }, 3000); 
     }

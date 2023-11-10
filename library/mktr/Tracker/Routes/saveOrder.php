@@ -58,6 +58,6 @@ class saveOrder
                 Core::setSessionData('saveOrder', array());
             }
         }
-        return 'console.log(' . $allGood . ', ' . json_encode($list ,true) . ');';
+        return 'console.log(' . ($allGood ? 1 : 0 ) . ', ' . json_encode($list ,true) . ');';
     }
 }
