@@ -21,12 +21,9 @@ trait Catalog {
 
         if (array_key_exists('route', Core::request()->get)) {
             self::$route = Core::request()->get['route'];
-        }
-        /*
-        else if (array_key_exists('_route_', Core::request()->get)) {
+        } else if (array_key_exists('_route_', Core::request()->get)) {
             self::$route = Core::request()->get['_route_'];
         }
-        */
     }
 
     public static function init($registry, $th){
@@ -72,6 +69,14 @@ trait Catalog {
             return ;
         }
 
+        if (self::$route === null) {
+            if (array_key_exists('route', Core::request()->get)) {
+                self::$route = Core::request()->get['route'];
+            } else if (array_key_exists('_route_', Core::request()->get)) {
+                self::$route = Core::request()->get['_route_'];
+            }
+        }
+        
         if (!empty(Core::request()->get['route'])) {
             if (strpos(Core::request()->get['route'], "mktr/api/") !== false) {
                 self::route(Core::request()->get['route'], $data);

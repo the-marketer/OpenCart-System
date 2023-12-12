@@ -790,7 +790,7 @@ $out[] = '</div>';
             Settings::saveSetting('status', 1, $__['store_id']);
             mkConfig::saveSetting('refund_status', $refundStatus, $__['store_id']);
         }
-        if (Core::getOcVersion() >= "2.0"){
+        if (Core::getOcVersion() >= "2.2"){
             foreach (self::$events as $trigger => $actions) {
                 foreach ($actions as $action) {
                     $ac = Core::getOcVersion() >= "4" ? Core::getLink() . '|' . $action : Core::getLink() . '/' . $action;
@@ -811,11 +811,54 @@ $out[] = '</div>';
                     'status' => '1',
                     'sort_order' => '99',
                 );
+                if (Core::getOcVersion() < '2.2' && Core::getOcVersion() > '2.0') {
+                    $q = Core::i()->db->query("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "layout_module WHERE code='mktr_tracker' AND layout_id = '{$layout['layout_id']}'");
+
+                    if ($q->row['total'] == 0) {
+                        Core::i()->db->query("
+                        INSERT INTO " . DB_PREFIX . "layout_module SET
+                        layout_id = '{$layout['layout_id']}',
+                        code = 'mktr_tracker',
+                        position = 'content_bottom',
+                        sort_order = '99'");
+                    }
+                }
             }
+            if (Core::getOcVersion() < '2.2') {
+                $settings['mktr_tracker_status'] = 1;
+            }
+
             Core::i()->model_setting_setting->editSetting('mktr_tracker', $settings);
         }
 
         self::checkModule();
+    }
+
+    public static function uninstall()
+    {
+        $u20 = Core::getOcVersion() >= "2.0";
+
+        if ($u20 && Core::getOcVersion() <= "2.4"){
+            $do = Core::i()->model_extension_extension;
+        } else {
+            $do = Core::i()->model_setting_extension;
+        }
+
+        $do->uninstall('module', 'mktr_google');
+
+        Settings::deleteSetting(Core::getCode());
+
+        if ($u20) {
+            Events::deleteEventByCode(Core::getModuleCode());
+            if (Config::$addToModule) {
+                Module::deleteModulesByCode(Core::getModuleCode());
+            }
+        }
+        if (Core::getOcVersion() < '2.2' && Core::getOcVersion() > '2.0') {
+            Core::i()->db->query("DELETE FROM " . DB_PREFIX . "layout_module WHERE `code` = 'mktr_tracker'"); 
+        }
+
+        mkConfig::drop();
     }
 
     private static function getRefundStatusFromList($statusList) {
@@ -865,29 +908,5 @@ $out[] = '</div>';
         } else if (Core::getOcVersion() >= "3") {
             Settings::editSetting(array('status'=>1), $store_id = null, Core::getCodeCus('mktr_google'));
         }
-    }
-
-    public static function uninstall()
-    {
-        $u20 = Core::getOcVersion() >= "2.0";
-
-        if ($u20 && Core::getOcVersion() <= "2.4"){
-            $do = Core::i()->model_extension_extension;
-        } else {
-            $do = Core::i()->model_setting_extension;
-        }
-
-        $do->uninstall('module', 'mktr_google');
-
-        Settings::deleteSetting(Core::getCode());
-
-        if ($u20) {
-            Events::deleteEventByCode(Core::getModuleCode());
-            if (Config::$addToModule) {
-                Module::deleteModulesByCode(Core::getModuleCode());
-            }
-        }
-
-        mkConfig::drop();
     }
 }

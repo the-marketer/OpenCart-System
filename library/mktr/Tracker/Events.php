@@ -181,6 +181,8 @@ class Events
     })(document, "script", "' . Config::getKey() . '");';
         $lines[] = 'window.mktr = window.mktr || {};';
         $lines[] = 'window.mktr.debug = function () { if (typeof dataLayer != undefined) { for (let i of dataLayer) { console.log("Mktr","Google",i); } } };';
+        $lines[] = 'window.mktr.Loading = true;';
+        
         $lines[] = '';
         $wh =  array(Config::space, implode(Config::space, $lines));
         $rep = array("%space%", "%implode%");
@@ -272,13 +274,18 @@ class Events
             $(document.body).on("click", "'.Config::getSelectors().'", LoadEventsMktr);
         })(jQuery); </script>';*/
             return '<!-- Mktr Script Start --><script type="text/javascript">
+
 window.addEventListener("click", function(event){
-    if (event.target.matches("' . str_replace('"','\"',Config::getSelectors()) . '")) {
-        setTimeout(function(){
-            (function(){
-                let add = document.createElement("script"); add.async = true; add.src = "' . Core::url()->link('mktr/api/LoadEvents/', '', true) . '"; let s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(add,s);
-            })();
-        }, 3000); 
+    if (window.mktr.Loading) {
+        if (event.target.matches("' . str_replace('"','\"',Config::getSelectors()) . '") || event.target.closest("' . str_replace('"','\"',Config::getSelectors()) . '")) {
+            window.mktr.Loading = false;
+            setTimeout(function(){
+                window.mktr.Loading = true;
+                (function(){
+                    let add = document.createElement("script"); add.async = true; add.src = "' . Core::url()->link('mktr/api/LoadEvents/', '', true) . '"; let s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(add,s);
+                })();
+            }, 3000); 
+        }
     }
 });
         </script><!-- Mktr Script END -->';

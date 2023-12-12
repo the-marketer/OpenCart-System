@@ -151,6 +151,8 @@ importScripts("https://t.themarketer.com/firebase.js");';
 
         if (Core::getOcVersion() >= "4") {
             self::$configDefaults['selectors'] = "button[type='submit']";
+        } else if (Core::getOcVersion() <= "2.0") {
+            self::$configDefaults['selectors'] = "input[type='button'],.remove";
         }
 
         $data = array_merge(self::$configDefaults, $data);

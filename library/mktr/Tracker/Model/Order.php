@@ -251,6 +251,10 @@ class Order
             $data = substr(self::total_voucher(), 1);
         }
 
+        if (empty($data)) {
+            $data = 0;
+        }
+
         /** @noinspection PhpExpressionAlwaysNullInspection */
         return $data;
     }

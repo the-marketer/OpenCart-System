@@ -48,7 +48,7 @@ class mkConfig extends DB
         $is = true;
 
         try {
-            Core::query("SELECT * FROM `" . DB_PREFIX . self::getTable() . "` LIMIT 1");
+            $is = Core::query("SELECT * FROM `" . DB_PREFIX . self::getTable() . "` LIMIT 1");
         } catch (\Exception $e) {
             $is = false;
         }

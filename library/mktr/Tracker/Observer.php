@@ -73,10 +73,11 @@ class Observer
                     break;
                     case 'checkout/cart':
                     case 'module/cart':
+                        
                         if (isset(Core::request()->get['remove'])) {
-                            $product = explode(':', Core::request()->get['remove']);
+                            $remove = Core::request()->get['remove'];
+                            $product = explode(':', $remove);
                             $product_id = $product[0];
-
                             // Options
                             if (isset($product[1])) {
                                 $options = unserialize(base64_decode($product[1]));
@@ -88,6 +89,12 @@ class Observer
                                 'product_id' => $product_id,
                                 'option' => $options
                             ));
+
+                            if (isset(Core::session()->data) &&
+                                array_key_exists( 'cart', Core::session()->data) &&
+                                array_key_exists($remove, Core::session()->data['cart'])) {
+                                $p['quantity'] = Core::session()->data['cart'][$remove];
+                            }
 
                             Product::getById($p['product_id']);
 
@@ -207,6 +214,9 @@ class Observer
             $id = $product_id;
             $sku = Product::sku();
         }
+        if ($id === null && $sku === null) {
+            return false;
+        }
 
         self::$eventName = 'addToCart';
 
@@ -223,6 +233,10 @@ class Observer
     }
 
     public static function addToWishlist($product_id) {
+        if (Product::sku() === null || Product::id() === null) {
+            return false;
+        }
+        
         self::$eventName = 'addToWishlist';
 
         self::$eventData = array(
@@ -258,6 +272,10 @@ class Observer
         } else {
             $id = $product_id;
             $sku = Product::sku();
+        }
+
+        if ($id === null && $sku === null) {
+            return false;
         }
 
         self::$eventName = 'removeFromCart';
