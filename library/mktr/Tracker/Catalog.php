@@ -98,7 +98,7 @@ trait Catalog {
         // Events::google_body().
         Events::loader_body();
         if (Core::getOcVersion() >= "2.0") {
-            echo $out;
+            return $out;
         } else {
             Core::i()->output = $out;
         }
