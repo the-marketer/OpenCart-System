@@ -60,7 +60,7 @@ class Feed
             foreach ($products->rows as $uniq => $val)
             {
                 Product::selectProduct($uniq);
-
+                
                 $oo = array(
                     'id' => Product::id(),
                     'sku' => Product::sku(),
@@ -84,23 +84,24 @@ class Feed
                     'created_at' => Product::created_at(),
                 );
 
-                foreach ($oo as $key =>$val1) {
-                    if ($key == 'variations') {
-                        if (empty($val1['variation'])) {
-                            unset($oo[$key]);
-                        }
-                    } elseif ($key == 'media_gallery') {
-                        if (empty($val1['image'])) {
-                            unset($oo[$key]);
-                        }
-                    } else {
-                        if (empty($val1) && $val1 != 0 || $val1 === null) {
-                            unset($oo[$key]);
+                if (Product::sale_price() > 0) {
+                    foreach ($oo as $key =>$val1) {
+                        if ($key == 'variations') {
+                            if (empty($val1['variation'])) {
+                                unset($oo[$key]);
+                            }
+                        } elseif ($key == 'media_gallery') {
+                            if (empty($val1['image'])) {
+                                unset($oo[$key]);
+                            }
+                        } else {
+                            if (empty($val1) && $val1 != 0 || $val1 === null) {
+                                unset($oo[$key]);
+                            }
                         }
                     }
+                    $get[] = $oo;
                 }
-                $get[] = $oo;
-
             }
             $args['page']++;
 
