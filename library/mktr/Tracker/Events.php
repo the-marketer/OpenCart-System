@@ -182,6 +182,7 @@ class Events
         $lines[] = 'window.mktr = window.mktr || {};';
         $lines[] = 'window.mktr.debug = function () { if (typeof dataLayer != undefined) { for (let i of dataLayer) { console.log("Mktr","Google",i); } } };';
         $lines[] = 'window.mktr.Loading = true;';
+        $lines[] = 'window.mktr.version = "'.Config::$version.'";';
         
         $lines[] = '';
         $wh =  array(Config::space, implode(Config::space, $lines));
@@ -330,16 +331,17 @@ window.addEventListener("click", function(event){
     public static function schemaValidate($array, $schema)
     {
         $newOut = array();
-
-        foreach ($array as $key=>$val) {
-            if (isset($schema[$key])){
-                if (is_array($val)) {
-                    $newOut[$schema[$key]["@key"]] = self::schemaValidate($val, $schema[$key]["@schema"]);
-                } else {
-                    $newOut[$schema[$key]] = $val;
+        if (!empty($array) && is_array($array)) {
+            foreach ($array as $key=>$val) {
+                if (isset($schema[$key])){
+                    if (is_array($val)) {
+                        $newOut[$schema[$key]["@key"]] = self::schemaValidate($val, $schema[$key]["@schema"]);
+                    } else {
+                        $newOut[$schema[$key]] = $val;
+                    }
+                } else if (is_array($val)){
+                    $newOut[] = self::schemaValidate($val, $schema);
                 }
-            } else if (is_array($val)){
-                $newOut[] = self::schemaValidate($val, $schema);
             }
         }
 

@@ -25,6 +25,9 @@ class Observer
         'checkout/cart/add' => 'addToCart',
         'checkout/cart/remove' => 'removeFromCart',
         'account/wishlist/add' => 'addToWishlist',
+        'checkout/cart.add' => 'addToCart',
+        'checkout/cart.remove' => 'removeFromCart',
+        'account/wishlist.add' => 'addToWishlist',
         'account/wishlist' => 'removeFromWishlist',
         'account/register' => 'RegisterOrLogIn',
         'account/login' => 'RegisterOrLogIn',
@@ -37,13 +40,27 @@ class Observer
         'api/order|edit' => 'orderUp',
         'checkout/cart|add' => 'addToCart',
         'checkout/cart|remove' => 'removeFromCart',
+        
+        'api/order.edit' => 'orderUp',
+        'api/order.history' => 'orderUp',
+        'sale/order.history' => 'orderUp',
+        'sale/order.call' => 'orderUp',
+        'checkout/cart.add' => 'addToCart',
+        'checkout/cart.remove' => 'removeFromCart',
+
         'checkout/cart' => 'removeFromCart',
         'module/cart' => 'remove',
         'account/wishlist|add' => 'addToWishlist',
         'account/wishlist|remove' => 'removeFromWishlist',
         'account/register|register' => 'RegisterOrLogIn',
         'account/login|login' => 'RegisterOrLogIn',
-        'account/newsletter|save' => 'RegisterOrLogIn'
+        'account/newsletter|save' => 'RegisterOrLogIn',
+
+        'account/wishlist.add' => 'addToWishlist',
+        'account/wishlist.remove' => 'removeFromWishlist',
+        'account/register.register' => 'RegisterOrLogIn',
+        'account/login.login' => 'RegisterOrLogIn',
+        'account/newsletter.save' => 'RegisterOrLogIn'
     );
 
     private static $defPostAddRemove = array(
@@ -63,6 +80,7 @@ class Observer
                 switch ($route) {
                     case 'checkout/cart|add':
                     case 'checkout/cart/add':
+                    case 'checkout/cart.add':
                         $p = array_merge(self::$defPostAddRemove, Core::request()->post);
 
                         Product::getById($p['product_id']);
@@ -106,6 +124,7 @@ class Observer
                         break;
                     case 'checkout/cart|remove':
                     case 'checkout/cart/remove':
+                    case 'checkout/cart.remove':
                         $item = Product::getCartItem(Core::request()->post['key']);
 
                         /** @noinspection PhpComposerExtensionStubsInspection */
@@ -121,11 +140,14 @@ class Observer
                     break;
                     case 'account/wishlist|add':
                     case 'account/wishlist/add':
+                    case 'account/wishlist.add':
                         Product::getById(Core::request()->post['product_id']);
 
                         self::addToWishlist(Core::request()->post['product_id']);
                     break;
                     case 'account/wishlist|remove':
+                    case 'account/wishlist/remove':
+                    case 'account/wishlist.remove':
                         Product::getById(Core::request()->post['product_id']);
 
                         self::removeFromWishlist(Core::request()->post['product_id']);
@@ -139,13 +161,28 @@ class Observer
                     break;
 
                     case 'checkout/success':
+                        $orderID = null;
                         if (isset(Core::session()->data['order_id'])) {
-                            self::saveOrder(Core::session()->data['order_id']);
+                            $orderID = Core::session()->data['order_id'];
+                            Core::setSessionData('mktr_order_id', []);
+                        } else {
+                            $order = Core::getSessionData('mktr_order_id');
+                            if (!empty($order) && array_key_exists('id', $order)) {
+                                $orderID = $order['id'];
+                                Core::setSessionData('mktr_order_id', []);
+                            }
+                        }
+                        if ($orderID !== null) {
+                            self::saveOrder($orderID);
                         }
                     break;
                     case 'account/register|register':
+                    case 'account/register/register':
+                    case 'account/register.register':
                     case 'account/register':
+                    case 'account/login/login':
                     case 'account/login|login':
+                    case 'account/login.login':
                     case 'account/login':
                         if (isset(Core::request()->post['email'])) {
                             self::emailAndPhone(Core::request()->post['email']);
@@ -153,16 +190,25 @@ class Observer
                     break;
                     case 'api/order|edit':
                     case 'api/order/edit':
+                    case 'api/order.edit':
+                    case 'sale/order/call':
                     case 'sale/order|call':
+                    case 'sale/order.call':
                     case 'api/order/history':
+                    case 'api/order|history':
+                    case 'api/order.history':
                     case 'sale/order/history':
+                    case 'sale/order|history':
+                    case 'sale/order.history':
                         if (isset(Core::request()->post['order_status_id'])) {
                             $oId = Core::request()->get['order_id'];
                             $status = Order::getFromStatusList(Core::request()->post['order_status_id']);
                             self::orderUp($oId, $status);
                         }
                     break;
+                    case 'account/newsletter/save':
                     case 'account/newsletter|save':
+                    case 'account/newsletter.save':
                     case 'account/newsletter':
                         if (isset(Core::request()->post['newsletter'])) {
                             self::emailAndPhone(Core::customer()->getEmail());
@@ -316,26 +362,9 @@ class Observer
 
     public static function saveOrder($orderId)
     {
-        Order::getById($orderId);
-
         self::$eventName = 'saveOrder';
 
-        self::$eventData = array(
-            "number" => Order::id(),
-            "email_address" => Order::email(),
-            "phone" => Order::telephone(),
-            "firstname" => Order::firstname(),
-            "lastname" => Order::lastname(),
-            "city" => Order::city(),
-            "county" => Order::county(),
-            "address" => Order::address(),
-            "discount_value" => Order::discount_value(),
-            "discount_code" => Order::discount_code(),
-            "shipping" => Order::shipping(),
-            "tax" => Order::tax(),
-            "total_value" => Order::total_value(),
-            "products" => Order::products(),
-        );
+        self::$eventData = $orderId;
 
         self::SessionSet($orderId);
     }

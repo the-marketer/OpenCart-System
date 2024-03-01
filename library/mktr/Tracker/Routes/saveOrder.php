@@ -32,9 +32,21 @@ class saveOrder
         $list = array();
 
         if (!empty($Order)) {
-            foreach ($Order as $sOrder)
+
+            foreach ($Order as $orderId)
             {
+                if (isset($orderId["number"])) {
+                    $sOrder = $orderId;
+                } else {
+                    \Mktr\Tracker\Model\Order::getById($orderId);
+                    $sOrder = \Mktr\Tracker\Model\Order::toApi();
+                }
+
                 Api::send("save_order", $sOrder);
+
+                \Mktr\Helper\OrderLogs::i()->addToIfNot('orderIDs', $sOrder['number']);
+                \Mktr\Helper\OrderLogs::i()->save();
+
                 $list[] = $sOrder;
                 if (Api::getStatus() != 200) {
                     $allGood = false;

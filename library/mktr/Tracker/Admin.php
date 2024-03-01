@@ -791,10 +791,19 @@ $out[] = '</div>';
             mkConfig::saveSetting('refund_status', $refundStatus, $__['store_id']);
         }
         if (Core::getOcVersion() >= "2.2"){
-            foreach (self::$events as $trigger => $actions) {
-                foreach ($actions as $action) {
-                    $ac = Core::getOcVersion() >= "4" ? Core::getLink() . '|' . $action : Core::getLink() . '/' . $action;
-                    Events::addEvent(Core::getModuleCode(), $trigger, $ac);
+            if (Core::getOcVersion() >= "4.0.2") {
+                foreach (self::$events as $trigger => $actions) {
+                    foreach ($actions as $action) {
+                        $ac = Core::getLink() . '.' . $action;
+                        Events::addEvent(Core::getModuleCode(), $trigger, $ac);
+                    }
+                }
+            } else {
+                foreach (self::$events as $trigger => $actions) {
+                    foreach ($actions as $action) {
+                        $ac = Core::getOcVersion() >= "4" ? Core::getLink() . '|' . $action : Core::getLink() . '/' . $action;
+                        Events::addEvent(Core::getModuleCode(), $trigger, $ac);
+                    }
                 }
             }
         } else {
@@ -826,6 +835,13 @@ $out[] = '</div>';
             }
             if (Core::getOcVersion() < '2.2') {
                 $settings['mktr_tracker_status'] = 1;
+                if (Core::getOcVersion() > '2.0') {
+                    foreach (array( 'pre.order.add' => array('pre_order_add'), 'post.order.add' => array('post_order_add') ) as $trigger => $actions) {
+                        foreach ($actions as $action) {
+                            Events::addEvent(Core::getModuleCode(), $trigger, Core::getLink() . '/' . $action);
+                        }
+                    }
+                }
             }
 
             Core::i()->model_setting_setting->editSetting('mktr_tracker', $settings);
@@ -855,7 +871,8 @@ $out[] = '</div>';
             }
         }
         if (Core::getOcVersion() < '2.2' && Core::getOcVersion() > '2.0') {
-            Core::i()->db->query("DELETE FROM " . DB_PREFIX . "layout_module WHERE `code` = 'mktr_tracker'"); 
+            Core::i()->db->query("DELETE FROM " . DB_PREFIX . "layout_module WHERE `code` = 'mktr_tracker'");
+            Events::deleteEventByCode(Core::getModuleCode());
         }
 
         mkConfig::drop();

@@ -533,4 +533,24 @@ class Order
 
         return $data;
     }
+    
+    public static function toApi()
+    {
+        return array(
+            "number" => Order::id(),
+            "email_address" => Order::email(),
+            "phone" => Order::telephone(),
+            "firstname" => Order::firstname(),
+            "lastname" => Order::lastname(),
+            "city" => Order::city(),
+            "county" => Order::county(),
+            "address" => Order::address(),
+            "discount_value" => Order::discount_value(),
+            "discount_code" => Order::discount_code(),
+            "shipping" => Order::shipping(),
+            "tax" => Order::tax(),
+            "total_value" => Order::total_value(),
+            "products" => Order::products(),
+        );;
+    }
 }

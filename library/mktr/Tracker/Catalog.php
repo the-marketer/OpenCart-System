@@ -14,6 +14,7 @@ trait Catalog {
     private static $load = false;
     private static $load2 = false;
     private static $route = null;
+    private static $saveOrderDetect = false;
 
     public function __construct($registry) {
         parent::__construct($registry);
@@ -77,6 +78,18 @@ trait Catalog {
             }
         }
         
+        if (self::$saveOrderDetect) {
+            if(!empty(Core::session()->data) && array_key_exists('order_id', Core::session()->data)) {
+                if (Core::session()->data['order_id'] !== null) {
+                    Observer::saveOrder(Core::session()->data['order_id']);
+                }
+            }
+        } else {
+            if (empty(Core::getSessionData('mktr_order_id')) && !empty(Core::session()->data) && array_key_exists('order_id', Core::session()->data)) {
+                Core::setSessionData('mktr_order_id', [ 'id' => Core::session()->data['order_id'] ]);
+            }
+        }
+
         if (!empty(Core::request()->get['route'])) {
             if (strpos(Core::request()->get['route'], "mktr/api/") !== false) {
                 self::route(Core::request()->get['route'], $data);
@@ -119,5 +132,14 @@ trait Catalog {
                 // Events::google_body().
                 Events::loader_body() . '</head>',
                 '</body>' ), $output);
+    }
+
+    public static function post_order_add($order_id) {
+        Observer::saveOrder($order_id);
+    }
+    
+    public static function pre_order_add($data) {
+        // var_dump($data);
+        // die();
     }
 }
