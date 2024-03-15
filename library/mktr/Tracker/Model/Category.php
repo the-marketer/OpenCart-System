@@ -58,8 +58,7 @@ class Category
         if (self::$asset == null) {
             self::getById();
         }
-
-        if (isset(self::$valueNames[$name])) {
+        if (isset(self::$valueNames[$name]) && isset(self::$asset[self::$valueNames[$name]])) {
             $v = self::$valueNames[$name];
             self::$data[$name] = self::$asset[$v];
             return self::$asset[$v];
@@ -92,7 +91,7 @@ class Category
 
     public static function getById($id = null)
     {
-        if ($id == null)
+        if ($id == null && isset(Core::request()->get['path']))
         {
             $ct = explode('_', Core::request()->get['path']);
 
