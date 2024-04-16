@@ -400,11 +400,17 @@ window.addEventListener("click", function(event){
             $categoryRegistry = Category::getById();
         }
 
-        $build = array($categoryRegistry->getName());
+        $build = array(Category::getName());
+        $cp = Category::getParentId();
 
-        while ($categoryRegistry->getParentId() > 0) {
-            $categoryRegistry = Category::getById($categoryRegistry->getParentId());
-            $build[] = $categoryRegistry->getName();
+        while ($cp > 0) {
+            $categoryRegistry = Category::getById($cp);
+            if ($cp === Category::getId()) {
+                $cp = Category::getParentId();
+                $build[] = Category::getName();
+            } else {
+                $cp = 0;
+            }
         }
         return implode("|", array_reverse($build));
     }
@@ -417,20 +423,23 @@ window.addEventListener("click", function(event){
             self::buildSingleCategory();
         }
 
-        if (empty(self::$bMultiCat))
-        {
+        if (empty(self::$bMultiCat)) {
             self::$bMultiCat[] = "Default Category";
         }
+
         return implode("|", array_reverse(self::$bMultiCat));
     }
 
     public static function buildSingleCategory() {
-        self::$bMultiCat[] = Category::getName();
+        if (!empty(Category::getName()) && Category::getName() !== null) {
+            self::$bMultiCat[Category::getName()] = Category::getName();
+        }
 
         while (Category::getParentId() > 0) {
             Category::getById(Category::getParentId());
-
-            self::$bMultiCat[] = Category::getName();
+            if (!empty(Category::getName()) && Category::getName() !== null) {
+                self::$bMultiCat[Category::getName()] = Category::getName();
+            }
         }
     }
 

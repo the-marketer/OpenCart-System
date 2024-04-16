@@ -24,14 +24,13 @@ class Observer
     private static $routes = array(
         'checkout/cart/add' => 'addToCart',
         'checkout/cart/remove' => 'removeFromCart',
-        'account/wishlist/add' => 'addToWishlist',
         'checkout/cart.add' => 'addToCart',
         'checkout/cart.remove' => 'removeFromCart',
-        'account/wishlist.add' => 'addToWishlist',
-        'account/wishlist' => 'removeFromWishlist',
         'account/register' => 'RegisterOrLogIn',
         'account/login' => 'RegisterOrLogIn',
         'checkout/success' => 'saveOrder',
+        'extension/payment/cod/confirm' => 'saveOrder',
+        'extension/payment/ipay/confirm' => 'saveOrder',
         'account/newsletter' => 'RegisterOrLogIn',
         'api/order/edit' => 'orderUp',
         'api/order/history' => 'orderUp',
@@ -50,17 +49,22 @@ class Observer
 
         'checkout/cart' => 'removeFromCart',
         'module/cart' => 'remove',
-        'account/wishlist|add' => 'addToWishlist',
-        'account/wishlist|remove' => 'removeFromWishlist',
         'account/register|register' => 'RegisterOrLogIn',
         'account/login|login' => 'RegisterOrLogIn',
         'account/newsletter|save' => 'RegisterOrLogIn',
 
+        'account/wishlist/add' => 'addToWishlist',
         'account/wishlist.add' => 'addToWishlist',
+        'account/wishlist|add' => 'addToWishlist',
+        'account/wishlist' => 'removeFromWishlist',
         'account/wishlist.remove' => 'removeFromWishlist',
+        'account/wishlist|remove' => 'removeFromWishlist',
         'account/register.register' => 'RegisterOrLogIn',
         'account/login.login' => 'RegisterOrLogIn',
         'account/newsletter.save' => 'RegisterOrLogIn'
+        /* 
+        New EVENT 2
+        */
     );
 
     private static $defPostAddRemove = array(
@@ -78,6 +82,9 @@ class Observer
         if ($route !== null) {
             if (isset(self::$routes[$route])) {
                 switch ($route) {
+                    /*
+                    New EVENT 3
+                    */
                     case 'checkout/cart|add':
                     case 'checkout/cart/add':
                     case 'checkout/cart.add':
@@ -153,13 +160,18 @@ class Observer
                         self::removeFromWishlist(Core::request()->post['product_id']);
                         break;
                     case 'account/wishlist':
+                        if (isset($_COOKIE['EAX'])) {
+            var_dump(Core::request()->get['remove']);
+            die();
+                        }
                         if (isset(Core::request()->get['remove'])) {
                             Product::getById(Core::request()->get['remove']);
 
                             self::removeFromWishlist(Core::request()->get['remove']);
                         }
                     break;
-
+                    case 'extension/payment/ipay/confirm':
+                    case 'extension/payment/cod/confirm':
                     case 'checkout/success':
                         $orderID = null;
                         if (isset(Core::session()->data['order_id'])) {

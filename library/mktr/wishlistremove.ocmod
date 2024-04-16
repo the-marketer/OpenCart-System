@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>TheMarketer Wishlist Remove</name>
+	<version>1.0</version>
+	<author>theMarketer.com</author>
+	<link>https://themarketer.com/integrations/opencart</link>
+	<code>wishlist_remove</code>
+  
+	<file error="skip" path="catalog/controller/account/wishlist.php">		
+		<operation error="skip">
+		<search><![CDATA[if (isset($this->request->get['remove'])) {]]></search>
+			<add position="after" ><![CDATA[
+// theMarketer wishlistremove tested on 2.3.0
+$this->session->data['themarketer_remove'] = $this->request->get['remove'];
+// theMarketer wishlistremove end
+]]></add>
+		</operation>
+	</file>
+  
+    <file error="skip" path="catalog/controller/startup/startup.php">		
+		<operation error="skip">
+		<search><![CDATA[class ]]></search>
+			<add position="before" ><![CDATA[
+// theMarketer wishlistremove
+if (!defined('mktr_wishlist_remove')) {
+    define('mktr_wishlist_remove', true);
+}
+// theMarketer wishlistremove end
+]]></add>
+		</operation>
+	</file>
+  
+</modification>

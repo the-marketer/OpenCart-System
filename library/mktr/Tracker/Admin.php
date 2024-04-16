@@ -51,8 +51,12 @@ trait Admin {
         ),
         'catalog/controller/account/*/before' => array(
             'observer'
+        ),
+        'catalog/controller/extension/*/before' => array(
+            'observer'
         )
         /*
+        New EVENT 1
         'catalog/controller/account/wishlist/before' => array(
             'observer'
         ),

@@ -8,6 +8,10 @@ namespace Mktr\Tracker;
 use Mktr\Helper\Config;
 use Mktr\Helper\Core;
 
+if (!defined('mktr_wishlist_remove')) {
+    define('mktr_wishlist_remove', false);
+}
+
 trait Catalog {
     public static $Page = false;
     private static $conf = null;
@@ -24,6 +28,13 @@ trait Catalog {
             self::$route = Core::request()->get['route'];
         } else if (array_key_exists('_route_', Core::request()->get)) {
             self::$route = Core::request()->get['_route_'];
+        }
+        if (mktr_wishlist_remove) {
+            if (isset($this->session->data['themarketer_remove']) && $this->session->data['themarketer_remove'] !== null) {
+                \Mktr\Tracker\Model\Product::getById($this->session->data['themarketer_remove']);
+                Observer::removeFromWishlist($this->session->data['themarketer_remove']);
+                unset($this->session->data['themarketer_remove']);
+            }
         }
     }
 
@@ -125,13 +136,13 @@ trait Catalog {
         self::$load = true;
 
         $output = str_replace(
-            array( '</head>', '</body>' ),
-            array( Events::google_head() .
-                Events::loader() .
-                Events::loadEvents() .
-                // Events::google_body().
-                Events::loader_body() . '</head>',
-                '</body>' ), $output);
+            '</head>',
+            Events::google_head() .
+            Events::loader() .
+            Events::loadEvents() .
+            // Events::google_body().
+            Events::loader_body() . '</head>',
+            $output);
     }
 
     public static function post_order_add($order_id) {
