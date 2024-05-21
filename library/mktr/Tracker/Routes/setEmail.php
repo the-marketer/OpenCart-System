@@ -31,21 +31,29 @@ class setEmail
 
         $allGood = true;
 
-        foreach ($em as $val)
-        {
-            Customer::getByEmail($val['email_address']);
+        $lines = array();
 
-            if (Customer::status() == Customer::STATUS_SUBSCRIBED) {
-                Api::send("add_subscriber", Observer::addSubscriber());
+        foreach ($em as $val) {
+            if (isset($val['unsubscribe'])) {
+                if ($val['unsubscribe']) {
+                    Api::send("remove_subscriber", array( "email" => $val['email_address'] ));
+                } else {
+                    $send = array( "email" => $val['email_address'], "name" => explode("@", $val['email_address'])[0]);
+                    Api::send("add_subscriber", $send);
+                }
+                if (Api::getStatus() != 200) { $allGood = false; }
             } else {
-                Api::send("remove_subscriber", array(
-                    "email" => $val['email_address']
-                ));
+                Customer::getByEmail($val['email_address']);
+    
+                if (Customer::status() == Customer::STATUS_SUBSCRIBED) {
+                    Api::send("add_subscriber", Observer::addSubscriber());
+                    if (Api::getStatus() != 200) { $allGood = false; }
+                } else {
+                    // Api::send("remove_subscriber", array( "email" => $val['email_address'] ));
+                }
             }
-
-            if (Api::getStatus() != 200) {
-                $allGood = false;
-            }
+            // $lines[] = "dataLayer.push(" . Events::getEvent('__sm__set_email', $val)->toJson() . ");";
+            // if (Api::getStatus() != 200) { $allGood = false; }
         }
 
         if ($allGood)
@@ -54,6 +62,8 @@ class setEmail
             Core::setSessionData('setEmail', array());
         }
 
-        return 'console.log(' . ($allGood ? 1 : 0 ) . ');';
+        $lines[] = 'console.log(' . ($allGood ? 1 : 0 ) . ');';
+        
+        return implode(PHP_EOL, $lines);
     }
 }

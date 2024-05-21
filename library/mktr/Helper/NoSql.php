@@ -79,6 +79,10 @@ abstract class NoSql
     }
 
     public function addToIfNot($name, $value) {
+        if (!isset($this->data[$name])) {
+            $this->data[$name] = array();
+        }
+
         if (!in_array($value, $this->data[$name])) {
             $this->data[$name][] = $value;
             $this->isDirty = true;

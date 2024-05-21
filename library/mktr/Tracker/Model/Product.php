@@ -119,7 +119,10 @@ class Product
     }
 
     public static function getCreateAt() {
-        return date(Config::$dateFormat, strtotime(self::date_added()));
+        if (self::date_added() !== '0000-00-00 00:00:00') {
+            return  date(Config::$dateFormat, strtotime(self::date_added()));
+        }
+        return null;
     }
 
     public static function getProduct($product_id) {

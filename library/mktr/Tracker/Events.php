@@ -183,7 +183,7 @@ class Events
         $lines[] = 'window.mktr.debug = function () { if (typeof dataLayer != undefined) { for (let i of dataLayer) { console.log("Mktr","Google",i); } } };';
         $lines[] = 'window.mktr.Loading = true;';
         $lines[] = 'window.mktr.version = "'.Config::$version.'";';
-        
+        // $lines[] = 'console.log("'.Core::request()->get['_route_'].'");';
         $lines[] = '';
         $wh =  array(Config::space, implode(Config::space, $lines));
         $rep = array("%space%", "%implode%");
@@ -214,6 +214,13 @@ class Events
             {
                 foreach ($eventData as $key => $value)
                 {
+                    if ($event === 'saveOrder') {        
+                        if (!isset($value["number"])) {
+                            \Mktr\Tracker\Model\Order::getById($value);
+                            $value = \Mktr\Tracker\Model\Order::toApi();
+                        }
+                    }
+                    // var_dump($value); die();
                     $lines[] = "dataLayer.push(" . self::getEvent($Name[1], $value)->toJson() . ");";
                     if (!$Name[0]) {
                         $clear[$event][$key] = $key;
@@ -278,13 +285,14 @@ class Events
 
 window.addEventListener("click", function(event){
     if (window.mktr.Loading) {
-        if (event.target.matches("' . str_replace('"','\"',Config::getSelectors()) . '") || event.target.closest("' . str_replace('"','\"',Config::getSelectors()) . '")) {
+        let sel = "' . str_replace('"','\"',Config::getSelectors()) . '";
+        if (event.target.matches(sel) || event.target.closest(sel)) {
             window.mktr.Loading = false;
             setTimeout(function(){
-                window.mktr.Loading = true;
                 (function(){
-                    let add = document.createElement("script"); add.async = true; add.src = "' . Core::url()->link('mktr/api/LoadEvents/', '', true) . '"; let s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(add,s);
+                    let add = document.createElement("script"); add.async = true; add.src = "' . Core::url()->link('mktr/api/LoadEvents/', '', true) . '&mktr_time="+(new Date()).getTime(); let s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(add,s);
                 })();
+                window.mktr.Loading = true;
             }, 3000); 
         }
     }
@@ -377,7 +385,9 @@ window.addEventListener("click", function(event){
                 break;
             case "Brand":
                 $brand = Core::ocModel('catalog/manufacturer')->getManufacturer(Core::request()->get['manufacturer_id']);
-                self::$assets['name'] = $brand['name'];
+                if (isset($brand['name'])) {
+                    self::$assets['name'] = $brand['name'];
+                }
                 break;
             default:
                 self::$assets = $eventData;

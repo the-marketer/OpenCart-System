@@ -54,6 +54,12 @@ trait Admin {
         ),
         'catalog/controller/extension/*/before' => array(
             'observer'
+        ),
+        'catalog/controller/rest/*/before' => array(
+            'observer'
+        ),
+        'catalog/controller/journal3/*/before' => array(
+            'observer'
         )
         /*
         New EVENT 1
@@ -68,6 +74,7 @@ trait Admin {
     );
 
     private static $store_id = null;
+    private static $linksAdd = true;
 
     private static $mkData = array();
 
@@ -737,17 +744,18 @@ $out[] = '</div>';
     public static function links(&$route=null, &$data=null, &$template =null) {
         // Core::dd(array($route, $data, $template));
 
-        if (!Core::user()->hasPermission('access', Core::getLink())) {
+        if (!Core::user()->hasPermission('access', Core::getLink()) && self::$linksAdd === false) {
             return;
         }
-
+        
         Logo::getTitle('Tracker');
         if (Core::getOcVersion() >= "2.3") {
             $newOder = array();
             foreach ($data['menus'] as $menu) {
                 $newOder[] = $menu;
 
-                if ($menu['id'] == 'menu-dashboard') {
+                if ($menu['id'] == 'menu-dashboard' && self::$linksAdd === true) {
+                    self::$linksAdd = false;
                     $newOder[] = array(
                         'id' => 'menu-mktr',
                         'name' => Core::getOcVersion() >= "2.4" ? Logo::getMenuTitle2() : Logo::getTitle(),
@@ -771,7 +779,8 @@ $out[] = '</div>';
             $data['menu'] = str_replace(
                 '<li id="catalog">',
                 '<li id="mktr"><a class="parent"><i class="fa fa-paper-plane fa-fw"></i> <span>' . Logo::getTitle() . '</span></a>' . $chil . '</li><li id="catalog">',$data['menu']);
-        }        
+        }
+        self::$linksAdd = false;    
     }
 
     public static function install()

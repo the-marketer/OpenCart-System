@@ -24,44 +24,58 @@ class Observer
     private static $routes = array(
         'checkout/cart/add' => 'addToCart',
         'checkout/cart/remove' => 'removeFromCart',
-        'checkout/cart.add' => 'addToCart',
-        'checkout/cart.remove' => 'removeFromCart',
-        'account/register' => 'RegisterOrLogIn',
-        'account/login' => 'RegisterOrLogIn',
-        'checkout/success' => 'saveOrder',
-        'extension/payment/cod/confirm' => 'saveOrder',
-        'extension/payment/ipay/confirm' => 'saveOrder',
-        'account/newsletter' => 'RegisterOrLogIn',
-        'api/order/edit' => 'orderUp',
-        'api/order/history' => 'orderUp',
-        'sale/order/history' => 'orderUp',
-        'sale/order|call' => 'orderUp',
-        'api/order|edit' => 'orderUp',
         'checkout/cart|add' => 'addToCart',
         'checkout/cart|remove' => 'removeFromCart',
-        
-        'api/order.edit' => 'orderUp',
-        'api/order.history' => 'orderUp',
-        'sale/order.history' => 'orderUp',
-        'sale/order.call' => 'orderUp',
         'checkout/cart.add' => 'addToCart',
         'checkout/cart.remove' => 'removeFromCart',
-
         'checkout/cart' => 'removeFromCart',
-        'module/cart' => 'remove',
-        'account/register|register' => 'RegisterOrLogIn',
-        'account/login|login' => 'RegisterOrLogIn',
-        'account/newsletter|save' => 'RegisterOrLogIn',
+        
+        'checkout/register.save' => 'saveOrder',
+        'checkout/register/save' => 'saveOrder',
+        'checkout/register|save' => 'saveOrder',
+        'checkout/success' => 'saveOrder',
 
         'account/wishlist/add' => 'addToWishlist',
-        'account/wishlist.add' => 'addToWishlist',
+        'account/wishlist/remove' => 'removeFromWishlist',
         'account/wishlist|add' => 'addToWishlist',
-        'account/wishlist' => 'removeFromWishlist',
-        'account/wishlist.remove' => 'removeFromWishlist',
         'account/wishlist|remove' => 'removeFromWishlist',
+        'account/wishlist.add' => 'addToWishlist',
+        'account/wishlist.remove' => 'removeFromWishlist',
+        'account/wishlist' => 'removeFromWishlist',
+
+        'account/register' => 'RegisterOrLogIn',
+        'account/register|register' => 'RegisterOrLogIn',
         'account/register.register' => 'RegisterOrLogIn',
+        'account/register/register' => 'RegisterOrLogIn',
+        
+        'account/login' => 'RegisterOrLogIn',
+        'account/login|login' => 'RegisterOrLogIn',
         'account/login.login' => 'RegisterOrLogIn',
-        'account/newsletter.save' => 'RegisterOrLogIn'
+        
+        'account/newsletter' => 'RegisterOrLogIn',
+        'account/newsletter|save' => 'RegisterOrLogIn',
+        'account/newsletter.save' => 'RegisterOrLogIn',
+        'journal3/newsletter/newsletter' => 'RegisterOrLogInJournal',
+
+        'extension/payment/cod/confirm' => 'saveOrder',
+        'extension/payment/ipay/confirm' => 'saveOrder',
+
+        'api/order/edit' => 'orderUp',
+        'api/order/history' => 'orderUp',
+        'api/order|edit' => 'orderUp',
+        'api/order.edit' => 'orderUp',
+        'api/order|history' => 'orderUp',
+        'api/order.history' => 'orderUp',
+        'sale/order/history' => 'orderUp',
+        'sale/order|history' => 'orderUp',
+        'sale/order.history' => 'orderUp',
+        'sale/order|call' => 'orderUp',
+        'sale/order.call' => 'orderUp',
+
+        'rest/Custom_API_MTF_admin/FinalizeOrder' => 'orderUpCargus',
+        'rest/order_admin/orderhistory' => 'orderUpCargus2',
+
+        'module/cart' => 'remove'
         /* 
         New EVENT 2
         */
@@ -80,6 +94,9 @@ class Observer
         }
 
         if ($route !== null) {
+            if (array_key_exists('order_id', Core::session()->data)) {
+                Core::setSessionData('tmp_order_id', [ 'id' => Core::session()->data['order_id'] ]);
+            }
             if (isset(self::$routes[$route])) {
                 switch ($route) {
                     /*
@@ -91,8 +108,12 @@ class Observer
                         $p = array_merge(self::$defPostAddRemove, Core::request()->post);
 
                         Product::getById($p['product_id']);
+                        
+                        $variant = null;
 
-                        $variant = self::getVariantID($p['option']);
+                        if (isset($p['option']) && $p['option'] !== null) {
+                            $variant = self::getVariantID($p['option']);
+                        }
 
                         self::addToCart($p['product_id'], $p['quantity'], $variant);
                     break;
@@ -133,9 +154,11 @@ class Observer
                     case 'checkout/cart/remove':
                     case 'checkout/cart.remove':
                         $item = Product::getCartItem(Core::request()->post['key']);
-
-                        /** @noinspection PhpComposerExtensionStubsInspection */
-                        $item['option'] = json_decode($item['option'], true);
+                        
+                        if (isset($item['option'])) {
+                            /** @noinspection PhpComposerExtensionStubsInspection */
+                            $item['option'] = json_decode($item['option'], true);
+                        }
 
                         $p = array_merge(self::$defPostAddRemove, $item);
 
@@ -160,10 +183,6 @@ class Observer
                         self::removeFromWishlist(Core::request()->post['product_id']);
                         break;
                     case 'account/wishlist':
-                        if (isset($_COOKIE['EAX'])) {
-            var_dump(Core::request()->get['remove']);
-            die();
-                        }
                         if (isset(Core::request()->get['remove'])) {
                             Product::getById(Core::request()->get['remove']);
 
@@ -187,6 +206,19 @@ class Observer
                         if ($orderID !== null) {
                             self::saveOrder($orderID);
                         }
+                    break;
+                    case 'checkout/register.save':
+                    case 'checkout/register/save':
+                    case 'checkout/register|save':
+                        self::$eventName = 'setEmail';
+                        
+                        self::$eventData = array( 'email_address' => Core::request()->post['email'] );
+
+                        if (isset(Core::request()->post['newsletter']) && Core::request()->post['newsletter'] == 1) {
+                            self::$eventData['unsubscribe'] = false;
+                        }
+                        
+                        self::SessionSet(Core::request()->post['email']);
                     break;
                     case 'account/register|register':
                     case 'account/register/register':
@@ -218,12 +250,63 @@ class Observer
                             self::orderUp($oId, $status);
                         }
                     break;
+                    case 'rest/Custom_API_MTF_admin/FinalizeOrder':
+                        if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+                            $input = file_get_contents('php://input');
+                            $data = json_decode($input, true);
+
+                            if (isset($data['OrderID'])) {
+                                $status = Order::getFromStatusList(200);
+                                self::orderUp($data['OrderID'], $status);
+                            }
+                        }
+                    break;
+                    case 'rest/order_admin/orderhistory':
+                        if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+                            if (isset(Core::request()->get['id'])) {
+                                $id = Core::request()->get['id'];
+                                $input = file_get_contents('php://input');
+                                $data = json_decode($input, true);
+                                if (isset($data['order_status_id'])) {
+                                    $status = Order::getFromStatusList($data['order_status_id']);
+                                    self::orderUp($id, $status);
+                                }
+                            }
+                        }
+                    break;
                     case 'account/newsletter/save':
                     case 'account/newsletter|save':
                     case 'account/newsletter.save':
                     case 'account/newsletter':
                         if (isset(Core::request()->post['newsletter'])) {
-                            self::emailAndPhone(Core::customer()->getEmail());
+                            self::$eventName = 'setEmail';
+                            
+                            self::$eventData = array(
+                                'email_address' => Core::customer()->getEmail(),
+                                'unsubscribe' => false
+                            );
+                            
+                            if (Core::request()->post['newsletter'] == 0) {
+                                self::$eventData['unsubscribe'] = true;
+                            }
+                            
+                            self::SessionSet(Core::customer()->getEmail());
+                        }
+                    break;
+                    case 'journal3/newsletter/newsletter':
+                        if (isset(Core::request()->post['email'])) {
+                            self::$eventName = 'setEmail';
+                            
+                            self::$eventData = array(
+                                'email_address' => Core::request()->post['email'],
+                                'unsubscribe' => false
+                            );
+                            
+                            if (isset(Core::request()->get['unsubscribe'])) {
+                                self::$eventData['unsubscribe'] = true;
+                            }
+                            
+                            self::SessionSet(Core::request()->post['email']);
                         }
                     break;
 
@@ -307,6 +390,7 @@ class Observer
 
         self::SessionSet();
     }
+    
     public static function removeFromWishlist($product_id) {
         self::$eventName = 'removeFromWishlist';
 
@@ -446,6 +530,11 @@ class Observer
             {
                 unset($send['lastname']);
             }
+        }
+
+        if (Customer::status() == Customer::STATUS_SUBSCRIBED)
+        {
+            $send['unsubscribe'] = false;
         }
 
         self::$eventData = $send;

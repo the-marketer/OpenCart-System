@@ -551,6 +551,6 @@ class Order
             "tax" => Order::tax(),
             "total_value" => Order::total_value(),
             "products" => Order::products(),
-        );;
+        );
     }
 }
