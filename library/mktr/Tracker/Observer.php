@@ -95,12 +95,9 @@ class Observer
 
     public static function init($route = null, $data = null)
     {
-        if (self::$init == null) {
-            self::$init = new self();
-        }
-        if (self::$do === false) {
-            return self::$init;
-        }
+        if (self::$init == null) { self::$init = new self(); }
+
+        if (self::$do === false) { return self::$init; }
 
         if ($route !== null) {
             if (array_key_exists('order_id', Core::session()->data)) {
@@ -124,11 +121,11 @@ class Observer
                             $variant = self::getVariantID($p['option']);
                         }
 
+                        self::$do = false;
                         self::addToCart($p['product_id'], $p['quantity'], $variant);
                     break;
                     case 'checkout/cart':
                     case 'module/cart':
-                        
                         if (isset(Core::request()->get['remove'])) {
                             $remove = Core::request()->get['remove'];
                             $product = explode(':', $remove);
@@ -155,6 +152,7 @@ class Observer
 
                             $variant = self::getVariantID($p['option']);
 
+                            self::$do = false;
                             self::removeFromCart($p['product_id'], $p['quantity'], $variant);
 
                         }
@@ -175,6 +173,7 @@ class Observer
 
                         $variant = self::getVariantID($p['option']);
 
+                        self::$do = false;
                         self::removeFromCart($p['product_id'], $p['quantity'], $variant);
                     break;
                     case 'account/wishlist|add':
@@ -182,6 +181,7 @@ class Observer
                     case 'account/wishlist.add':
                         Product::getById(Core::request()->post['product_id']);
 
+                        self::$do = false;
                         self::addToWishlist(Core::request()->post['product_id']);
                     break;
                     case 'account/wishlist|remove':
@@ -189,12 +189,14 @@ class Observer
                     case 'account/wishlist.remove':
                         Product::getById(Core::request()->post['product_id']);
 
+                        self::$do = false;
                         self::removeFromWishlist(Core::request()->post['product_id']);
                         break;
                     case 'account/wishlist':
                         if (isset(Core::request()->get['remove'])) {
                             Product::getById(Core::request()->get['remove']);
 
+                            self::$do = false;
                             self::removeFromWishlist(Core::request()->get['remove']);
                         }
                     break;
@@ -213,6 +215,7 @@ class Observer
                             }
                         }
                         if ($orderID !== null) {
+                            self::$do = false;
                             self::saveOrder($orderID);
                         }
                     break;
@@ -227,6 +230,7 @@ class Observer
                             self::$eventData['unsubscribe'] = false;
                         }
                         
+                        self::$do = false;
                         self::SessionSet(Core::request()->post['email']);
                     break;
                     case 'account/register|register':
@@ -238,6 +242,7 @@ class Observer
                     case 'account/login.login':
                     case 'account/login':
                         if (isset(Core::request()->post['email'])) {
+                            self::$do = false;
                             self::emailAndPhone(Core::request()->post['email']);
                         }
                     break;
@@ -256,6 +261,7 @@ class Observer
                         if (isset(Core::request()->post['order_status_id'])) {
                             $oId = Core::request()->get['order_id'];
                             $status = Order::getFromStatusList(Core::request()->post['order_status_id']);
+                            self::$do = false;
                             self::orderUp($oId, $status);
                         }
                     break;
@@ -266,6 +272,7 @@ class Observer
 
                             if (isset($data['OrderID'])) {
                                 $status = Order::getFromStatusList(200);
+                                self::$do = false;
                                 self::orderUp($data['OrderID'], $status);
                             }
                         }
@@ -278,6 +285,7 @@ class Observer
                                 $data = json_decode($input, true);
                                 if (isset($data['order_status_id'])) {
                                     $status = Order::getFromStatusList($data['order_status_id']);
+                                    self::$do = false;
                                     self::orderUp($id, $status);
                                 }
                             }
@@ -300,6 +308,7 @@ class Observer
                                 self::$eventData['unsubscribe'] = true;
                             }
                             
+                            self::$do = false;
                             self::SessionSet(Core::customer()->getEmail());
                         }
                     break;
@@ -316,6 +325,7 @@ class Observer
                                 self::$eventData['unsubscribe'] = true;
                             }
                             
+                            self::$do = false;
                             self::SessionSet(Core::request()->post['email']);
                         }
                     break;
@@ -323,9 +333,9 @@ class Observer
                     default:
                         //Core::dd(Core::session()->data);
                 }
-                self::$do = false;
             }
         }
+        
         return self::$init;
     }
 
