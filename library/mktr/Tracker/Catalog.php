@@ -29,8 +29,7 @@ trait Catalog {
         } else if (array_key_exists('_route_', Core::request()->get)) {
             self::$route = Core::request()->get['_route_'];
         }
-        if (in_array(self::$route,
-                array(  'account/register|register', 'account/register/register', 'account/register.register', 'account/register',
+        if (in_array(self::$route, array(  'account/register|register', 'account/register/register', 'account/register.register', 'account/register',
                         'account/login/login', 'account/login|login', 'account/login.login', 'account/login', 'journal3/settings') )) {
             Observer::init(self::$route);
         }

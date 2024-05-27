@@ -217,7 +217,7 @@ class Events
                 foreach ($eventData as $key => $value)
                 {
                     if ($event === 'saveOrder') {        
-                        if (!isset($value["number"])) {
+                        if (!is_array($value)) {
                             \Mktr\Tracker\Model\Order::getById($value);
                             $value = \Mktr\Tracker\Model\Order::toApi();
                         }
