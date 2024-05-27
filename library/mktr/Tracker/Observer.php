@@ -51,10 +51,14 @@ class Observer
         'account/login' => 'RegisterOrLogIn',
         'account/login|login' => 'RegisterOrLogIn',
         'account/login.login' => 'RegisterOrLogIn',
+        'account/login/login' => 'RegisterOrLogIn',
         
         'account/newsletter' => 'RegisterOrLogIn',
         'account/newsletter|save' => 'RegisterOrLogIn',
         'account/newsletter.save' => 'RegisterOrLogIn',
+        'account/newsletter/save' => 'RegisterOrLogIn',
+
+        'journal3/settings' => 'RegisterOrLogIn',
         'journal3/newsletter/newsletter' => 'RegisterOrLogInJournal',
 
         'extension/payment/cod/confirm' => 'saveOrder',
@@ -81,6 +85,8 @@ class Observer
         */
     );
 
+    private static $do = true;
+
     private static $defPostAddRemove = array(
         'product_id' => null,
         'quantity' => 1,
@@ -91,6 +97,9 @@ class Observer
     {
         if (self::$init == null) {
             self::$init = new self();
+        }
+        if (self::$do === false) {
+            return self::$init;
         }
 
         if ($route !== null) {
@@ -278,6 +287,7 @@ class Observer
                     case 'account/newsletter|save':
                     case 'account/newsletter.save':
                     case 'account/newsletter':
+                    case 'journal3/settings':
                         if (isset(Core::request()->post['newsletter'])) {
                             self::$eventName = 'setEmail';
                             
@@ -313,6 +323,7 @@ class Observer
                     default:
                         //Core::dd(Core::session()->data);
                 }
+                self::$do = false;
             }
         }
         return self::$init;

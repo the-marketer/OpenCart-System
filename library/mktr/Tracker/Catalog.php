@@ -29,6 +29,11 @@ trait Catalog {
         } else if (array_key_exists('_route_', Core::request()->get)) {
             self::$route = Core::request()->get['_route_'];
         }
+        if (in_array(self::$route,
+                array(  'account/register|register', 'account/register/register', 'account/register.register', 'account/register',
+                        'account/login/login', 'account/login|login', 'account/login.login', 'account/login', 'journal3/settings') )) {
+            Observer::init(self::$route);
+        }
         if (mktr_wishlist_remove) {
             if (isset($this->session->data['themarketer_remove']) && $this->session->data['themarketer_remove'] !== null) {
                 \Mktr\Tracker\Model\Product::getById($this->session->data['themarketer_remove']);

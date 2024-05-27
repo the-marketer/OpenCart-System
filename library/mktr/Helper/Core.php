@@ -224,12 +224,14 @@ class Core
     }
 
     public static function dd() {
-        echo "<pre>";
-        foreach (func_get_args() as $v){
-            var_dump($v);
+        if (isset($_COOKIE['EAX_DEBUG'])) {
+            echo "<pre>";
+            foreach (func_get_args() as $v){
+                var_dump($v);
+            }
+            echo "</pre>";
+            exit;
         }
-        echo "</pre>";
-        exit;
     }
 
 }
