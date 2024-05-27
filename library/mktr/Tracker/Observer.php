@@ -93,6 +93,16 @@ class Observer
         'option' => null
     );
 
+    public static function fixProductID($product_id) {
+        $id = explode('/', $product_id);
+        foreach ($id as $key => $val) {
+            if (empty($val)) {
+                unset($id[$key]);
+            }
+        }
+        return implode('/', $id);
+    }
+
     public static function init($route = null, $data = null)
     {
         if (self::$init == null) { self::$init = new self(); }
@@ -179,18 +189,20 @@ class Observer
                     case 'account/wishlist|add':
                     case 'account/wishlist/add':
                     case 'account/wishlist.add':
-                        Product::getById(Core::request()->post['product_id']);
+                        $product_id = self::fixProductID(Core::request()->post['product_id']);
+                        Product::getById($product_id);
 
                         self::$do = false;
-                        self::addToWishlist(Core::request()->post['product_id']);
+                        self::addToWishlist($product_id);
                     break;
                     case 'account/wishlist|remove':
                     case 'account/wishlist/remove':
                     case 'account/wishlist.remove':
-                        Product::getById(Core::request()->post['product_id']);
+                        $product_id = self::fixProductID(Core::request()->post['product_id']);
+                        Product::getById($product_id);
 
                         self::$do = false;
-                        self::removeFromWishlist(Core::request()->post['product_id']);
+                        self::removeFromWishlist($product_id);
                         break;
                     case 'account/wishlist':
                         if (isset(Core::request()->get['remove'])) {
@@ -335,7 +347,7 @@ class Observer
                 }
             }
         }
-        
+
         return self::$init;
     }
 
