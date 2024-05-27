@@ -183,7 +183,9 @@ class Events
         $lines[] = 'window.mktr.debug = function () { if (typeof dataLayer != undefined) { for (let i of dataLayer) { console.log("Mktr","Google",i); } } };';
         $lines[] = 'window.mktr.Loading = true;';
         $lines[] = 'window.mktr.version = "'.Config::$version.'";';
-        // $lines[] = 'console.log("'.Core::request()->get['_route_'].'");';
+
+        // $lines[] = 'console.log("'.Core::request()->get['route'].'");';
+        
         $lines[] = '';
         $wh =  array(Config::space, implode(Config::space, $lines));
         $rep = array("%space%", "%implode%");

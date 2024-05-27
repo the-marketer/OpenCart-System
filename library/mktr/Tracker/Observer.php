@@ -35,6 +35,9 @@ class Observer
         'checkout/register|save' => 'saveOrder',
         'checkout/success' => 'saveOrder',
 
+        'extension/payment/cod/confirm' => 'saveOrder',
+        'extension/payment/ipay/confirm' => 'saveOrder',
+
         'account/wishlist/add' => 'addToWishlist',
         'account/wishlist/remove' => 'removeFromWishlist',
         'account/wishlist|add' => 'addToWishlist',
@@ -60,9 +63,6 @@ class Observer
 
         'journal3/settings' => 'RegisterOrLogIn',
         'journal3/newsletter/newsletter' => 'RegisterOrLogInJournal',
-
-        'extension/payment/cod/confirm' => 'saveOrder',
-        'extension/payment/ipay/confirm' => 'saveOrder',
 
         'api/order/edit' => 'orderUp',
         'api/order/history' => 'orderUp',
