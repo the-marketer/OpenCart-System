@@ -46,6 +46,12 @@ trait Admin {
         'catalog/view/common/header/after' => array(
             'loader'
         ),
+        'catalog/view/quick_checkout/header/after' => array(
+            'loader'
+        ),
+        //'catalog/view/*/quick_checkout/checkout/after' => array(
+        //    'observer'
+        //),
         'catalog/controller/checkout/*/before' => array(
             'observer'
         ),
