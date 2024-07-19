@@ -48,12 +48,13 @@ class Reviews
         if ($o->getStatus() == 200 && !empty($o->getContent())) {
 
             $xml = simplexml_load_string($o->getContent(), 'SimpleXMLElement', LIBXML_NOCDATA);
-            $added = array();
-            $revStore = Data::init()->{"reviewStore" . Config::getRestKey()};
+
+            $key = 'key'.Config::getRestKey();
 
             foreach ($xml->review as $value) {
                 if (isset($value->review_date)) {
-                    if (!isset($revStore[(string) $value->review_id])) {
+                    $revID = (string) $value->review_id;
+                    if (!isset(\Mktr\Helper\ReviewLogs::i()->{$key}[$revID])) {
                         $add = array(
                             'author'    => $value->review_author,
                             'product_id'=> $value->product_id, // <=== The product ID where the review will show up
@@ -69,16 +70,20 @@ class Reviews
                         }
 
                         $comment_id = \Mktr\Helper\Model\Reviews::addReview($add);
-                        $added[(string) $value->review_id] = $comment_id;
-                    } else {
-                        $added[(string) $value->review_id] = $revStore[(string) $value->review_id];
+                        \Mktr\Helper\ReviewLogs::i()->addTo($key, [ 'id' => $comment_id, 'expire' => strtotime("+10 day")] ,$revID);
                     }
                 }
             }
+            $revStore = array();
+            
+            foreach (\Mktr\Helper\ReviewLogs::i()->{$key} as $key => $val) {
+                if (time() < $val['expire'] ) {
+                    $revStore[$key] = $val;
+                }
+            }
 
-            Data::init()->{"reviewStore" . Config::getRestKey()} = $added;
-
-            Data::init()->save();
+            \Mktr\Helper\ReviewLogs::i()->{$key} = $revStore;
+            \Mktr\Helper\ReviewLogs::i()->save();
 
             return $xml;
         }

@@ -58,7 +58,8 @@ class Category
         if (self::$asset == null) {
             self::getById();
         }
-        if (isset(self::$valueNames[$name]) && isset(self::$asset[self::$valueNames[$name]])) {
+        
+        if (isset(self::$valueNames[$name]) && isset(self::$asset[self::$valueNames[$name]]) && isset(self::$asset[$v])) {
             $v = self::$valueNames[$name];
             self::$data[$name] = self::$asset[$v];
             return self::$asset[$v];
