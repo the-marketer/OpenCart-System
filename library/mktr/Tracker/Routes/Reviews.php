@@ -76,9 +76,9 @@ class Reviews
             }
             $revStore = array();
             
-            foreach (\Mktr\Helper\ReviewLogs::i()->{$key} as $key => $val) {
+            foreach (\Mktr\Helper\ReviewLogs::i()->{$key} as $kk => $val) {
                 if (time() < $val['expire'] ) {
-                    $revStore[$key] = $val;
+                    $revStore[$kk] = $val;
                 }
             }
 
