@@ -240,6 +240,7 @@ class Events
         //$baseURL = Config::getBaseURL();
 
         $linkVar =  Core::url()->link('mktr/api/', '', true);
+        $linkVar =  $linkVar . (substr($linkVar, -1) === '/' ? '' : '/');
 
         foreach ($loadJS as $k=>$v)
         {

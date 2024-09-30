@@ -59,9 +59,9 @@ trait Catalog {
             return ;
         }
         
-        if ($route === 'error/not_found' && strstr(self::$route, 'mktr/api/') !== false) {
+        if ($route === 'error/not_found' && strstr(self::$route, 'mktr/api') !== false) {
             $route = self::$route;
-        } else if (strstr($route, 'mktr/api/') === false) {
+        } else if (strstr($route, 'mktr/api') === false) {
             return ;
         }
 
