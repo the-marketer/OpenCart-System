@@ -238,8 +238,8 @@ class Observer
                         
                         self::$eventData = array( 'email_address' => Core::request()->post['email'] );
 
-                        if (isset(Core::request()->post['newsletter']) && Core::request()->post['newsletter'] == 1) {
-                            self::$eventData['unsubscribe'] = false;
+                        if (isset(Core::request()->post['newsletter']) && Core::request()->post['newsletter'] == 0) {
+                            self::$eventData['unsubscribe'] = true;
                         }
                         
                         self::$do = false;
@@ -313,7 +313,7 @@ class Observer
                             
                             self::$eventData = array(
                                 'email_address' => Core::customer()->getEmail(),
-                                'unsubscribe' => false
+                                //'unsubscribe' => false
                             );
                             
                             if (Core::request()->post['newsletter'] == 0) {
@@ -330,7 +330,7 @@ class Observer
                             
                             self::$eventData = array(
                                 'email_address' => Core::request()->post['email'],
-                                'unsubscribe' => false
+                                //'unsubscribe' => false
                             );
                             
                             if (isset(Core::request()->get['unsubscribe'])) {
@@ -563,11 +563,6 @@ class Observer
             {
                 unset($send['lastname']);
             }
-        }
-
-        if (Customer::status() == Customer::STATUS_SUBSCRIBED)
-        {
-            $send['unsubscribe'] = false;
         }
 
         self::$eventData = $send;
