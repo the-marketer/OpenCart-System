@@ -210,14 +210,14 @@ class Product
     /** @noinspection PhpUnused */
     public static function getStockStatus() {
         switch (self::$asset['stock_status']) {
-            case 'Out Of Stock':
-                return 0;
             case 'In Stock':
                 return 1;
             case '2-3 Days':
             case 'Pre-Order':
-            default:
                 return 2;
+            case 'Out Of Stock':
+            default:
+                return 0;
         }
     }
 
