@@ -101,6 +101,10 @@ class Category
             $id = end($ct);
         }
 
+        if (is_null($id) || empty($id)){
+            return null;
+        }
+
         self::$asset = Core::ocModel('catalog/category')->getCategory($id);
 
         return self::init();
