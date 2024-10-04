@@ -41,6 +41,7 @@ class Product
     private static $init = null;
     private static $asset = null;
     private static $data = array();
+    private static $addTax = true;
 
     private static $valueNames = array(
         'id' => 'product_id',
@@ -526,18 +527,19 @@ class Product
                 if (in_array($newVariation['id'], $added)) {
                     continue;
                 }
-
-                $newVariation['price'] = Core::i()->tax->calculate(
-                    (float) $newVariation['price'],
-                    self::tax_class_id(),
-                    Core::i()->config->get('config_tax')
-                );
-
-                $newVariation['sale_price'] = Core::i()->tax->calculate(
-                    (float) $newVariation['sale_price'],
-                    self::tax_class_id(),
-                    Core::i()->config->get('config_tax')
-                );
+                if (self::$addTax) {
+                    $newVariation['price'] = Core::i()->tax->calculate(
+                        (float) $newVariation['price'],
+                        self::tax_class_id(),
+                        Core::i()->config->get('config_tax')
+                    );
+    
+                    $newVariation['sale_price'] = Core::i()->tax->calculate(
+                        (float) $newVariation['sale_price'],
+                        self::tax_class_id(),
+                        Core::i()->config->get('config_tax')
+                    );
+                }
                 $newVariation['price'] = Valid::digit2($newVariation['price']);
 
                 if (empty($newVariation['sale_price'])) {
@@ -579,11 +581,13 @@ class Product
     public static function getPrice($check = false) {
         $p = self::regular_price();
 
-        $p = Core::i()->tax->calculate(
-            (float) $p,
-            self::tax_class_id(),
-            Core::i()->config->get('config_tax')
-        );
+        if (self::$addTax) {
+            $p = Core::i()->tax->calculate(
+                (float) $p,
+                self::tax_class_id(),
+                Core::i()->config->get('config_tax')
+            );
+        }
 
         $r = $check === true || !empty($p) ? $p : self::getSalePrice(true);
 
@@ -593,11 +597,13 @@ class Product
     public static function getSalePrice($check = false) {
         $p = self::special_price();
         if ($p !== null) {
-            $p = Core::i()->tax->calculate(
-                (float) $p,
-                self::tax_class_id(),
-                Core::i()->config->get('config_tax')
-            );
+            if (self::$addTax) {
+                $p = Core::i()->tax->calculate(
+                    (float) $p,
+                    self::tax_class_id(),
+                    Core::i()->config->get('config_tax')
+                );
+            }
         } else {
             $p = self::getPrice(true);
         }
