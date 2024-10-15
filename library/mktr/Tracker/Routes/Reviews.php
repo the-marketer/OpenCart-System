@@ -37,14 +37,18 @@ class Reviews
     public static function execute() {
         // Valid::getParam('start_date-type', date('Y-m-d'));
         $t = Valid::getParam('start_date', null);
+        
         if ($t === null) {
             $t = strtotime("-1 day");
             // (new \DateTime())->modify('-1 day')->setTime(0, 0, 0);
+        } else {
+            $t = strtotime($t);
         }
 
         $o = Api::send("product_reviews", array(
-            't' => strtotime($t)
+            't' => $t
         ), false);
+
         if ($o->getStatus() == 200 && !empty($o->getContent())) {
 
             $xml = simplexml_load_string($o->getContent(), 'SimpleXMLElement', LIBXML_NOCDATA);
