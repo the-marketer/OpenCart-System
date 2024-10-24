@@ -242,8 +242,10 @@ class Observer
                             self::$eventData['unsubscribe'] = true;
                         }
                         
-                        self::$do = false;
-                        self::SessionSet(Core::request()->post['email']);
+                        if (filter_var(self::$eventData['email_address'], FILTER_VALIDATE_EMAIL) !== false) {
+                            self::$do = false;
+                            self::SessionSet(self::$eventData['email_address']);
+                        }
                     break;
                     case 'account/register|register':
                     case 'account/register/register':
@@ -320,8 +322,10 @@ class Observer
                                 self::$eventData['unsubscribe'] = true;
                             }
                             
-                            self::$do = false;
-                            self::SessionSet(Core::customer()->getEmail());
+                            if (filter_var(self::$eventData['email_address'], FILTER_VALIDATE_EMAIL) !== false) {
+                                self::$do = false;
+                                self::SessionSet(self::$eventData['email_address']);
+                            }
                         }
                     break;
                     case 'journal3/newsletter/newsletter':
@@ -337,8 +341,11 @@ class Observer
                                 self::$eventData['unsubscribe'] = true;
                             }
                             
-                            self::$do = false;
-                            self::SessionSet(Core::request()->post['email']);
+                        
+                            if (filter_var(self::$eventData['email_address'], FILTER_VALIDATE_EMAIL) !== false) {
+                                self::$do = false;
+                                self::SessionSet(self::$eventData['email_address']);
+                            }
                         }
                     break;
 
@@ -535,7 +542,7 @@ class Observer
         $phone = Customer::telephone();
 
         if (!empty($phone)) {
-            self::$eventName = "setPhone";
+            self::$eventName = 'setPhone';
 
             self::$eventData = array(
                 'phone' => $phone
@@ -559,15 +566,16 @@ class Observer
 
         if (Customer::lastname() !== null) {
             $send['lastname'] = Customer::lastname();
-            if (empty($send['lastname']))
-            {
+            if (empty($send['lastname'])) {
                 unset($send['lastname']);
             }
         }
 
         self::$eventData = $send;
 
-        self::SessionSet();
+        if (filter_var(self::$eventData['email_address'], FILTER_VALIDATE_EMAIL) !== false) {
+            self::SessionSet(self::$eventData['email_address']);
+        }
     }
 
     private static function SessionSet($key = null)

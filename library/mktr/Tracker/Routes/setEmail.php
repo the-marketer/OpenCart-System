@@ -34,22 +34,24 @@ class setEmail
         $lines = array();
 
         foreach ($em as $val) {
-            if (isset($val['unsubscribe'])) {
-                if ($val['unsubscribe']) {
-                    Api::send("remove_subscriber", array( "email" => $val['email_address'] ));
-                } else {
-                    $send = array( "email" => $val['email_address'], "name" => explode("@", $val['email_address'])[0]);
-                    Api::send("add_subscriber", $send);
-                }
-                if (Api::getStatus() != 200) { $allGood = false; }
-            } else {
-                Customer::getByEmail($val['email_address']);
-    
-                if (Customer::status() == Customer::STATUS_SUBSCRIBED) {
-                    Api::send("add_subscriber", Observer::addSubscriber());
+            if (filter_var($val['email_address'], FILTER_VALIDATE_EMAIL) !== false) {
+                if (isset($val['unsubscribe'])) {
+                    if ($val['unsubscribe']) {
+                        Api::send("remove_subscriber", array( "email" => $val['email_address'] ));
+                    } else {
+                        $send = array( "email" => $val['email_address'], "name" => explode("@", $val['email_address'])[0]);
+                        Api::send("add_subscriber", $send);
+                    }
                     if (Api::getStatus() != 200) { $allGood = false; }
                 } else {
-                    // Api::send("remove_subscriber", array( "email" => $val['email_address'] ));
+                    Customer::getByEmail($val['email_address']);
+        
+                    if (Customer::status() == Customer::STATUS_SUBSCRIBED) {
+                        Api::send("add_subscriber", Observer::addSubscriber());
+                        if (Api::getStatus() != 200) { $allGood = false; }
+                    } else {
+                        // Api::send("remove_subscriber", array( "email" => $val['email_address'] ));
+                    }
                 }
             }
             // $lines[] = "dataLayer.push(" . Events::getEvent('__sm__set_email', $val)->toJson() . ");";
