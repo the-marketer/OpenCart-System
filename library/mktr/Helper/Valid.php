@@ -81,8 +81,20 @@ class Valid
     /** @noinspection PhpUnused
      * @noinspection PhpRedundantOptionalArgumentInspection
      */
-    public static function digit2($num) {
+    public static function digit2_old($num) {
         return number_format((float) $num, 2, '.', '');
+    }
+
+    public static function digit2($num, $digit = 2) {
+        if (preg_match('/^\d{1,3}(\.\d{1,3})*,\d{2}$/', $num)) {
+            $num = str_replace('.', '', $num);
+            $num = str_replace(',', '.', $num);
+        } else if (strpos($num, '.') !== false || strpos($num, ',') === false) {
+            $num = str_replace(',', '', $num);
+        } else {
+            $num = str_replace(',', '.', $num);
+        }
+        return number_format((float)$num, $digit, '.', '');
     }
 
     public static function check($checkParam = null) {

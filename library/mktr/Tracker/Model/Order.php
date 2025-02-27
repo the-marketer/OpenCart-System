@@ -188,9 +188,7 @@ class Order
 
         $offset = (($page - 1) * $limit);
 
-        self::$orders = Core::query("SELECT * FROM `" . DB_PREFIX . "order` WHERE `date_added` >= '" . $start_date .
-            "' ORDER BY `order_id` LIMIT " . $limit .
-            " OFFSET " . $offset);
+        self::$orders = Core::query("SELECT * FROM `" . DB_PREFIX . "order` WHERE `date_added` >= '" . $start_date . "' ORDER BY `order_id` LIMIT " . $limit . " OFFSET " . $offset);
 
         return self::$orders;
     }
@@ -256,7 +254,7 @@ class Order
         }
 
         /** @noinspection PhpExpressionAlwaysNullInspection */
-        return $data;
+        return Core::digit2($data);
     }
 
     public static function getDiscountCode()
@@ -286,7 +284,7 @@ class Order
         }
 
         /** @noinspection PhpExpressionAlwaysNullInspection */
-        return $data;
+        return Core::digit2($data);
     }
 
     public static function getTotal() {
@@ -299,7 +297,7 @@ class Order
         }
 
         /** @noinspection PhpExpressionAlwaysNullInspection */
-        return $data;
+        return Core::digit2($data);
     }
 
     public static function getTax() {
@@ -314,7 +312,7 @@ class Order
         }
 
         /** @noinspection PhpExpressionAlwaysNullInspection */
-        return $data;
+        return Core::digit2($data);
     }
 
     public static function getAllTotal() {
