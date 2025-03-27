@@ -64,7 +64,7 @@ class Reviews
                             'product_id'=> $value->product_id, // <=== The product ID where the review will show up
                             'text'      => $value->review_text,
                             'rating' => round(((int) $value->rating / 2)),
-                            'date_added'=> date('Y-m-d H:i:s')
+                            'date_added'=> $value->review_date ?? date('Y-m-d H:i:s')
                         );
 
                         $user = Customer::getByEmail($value->review_email);

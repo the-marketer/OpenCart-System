@@ -49,20 +49,53 @@ class Reviews
         'date_added' => '',
         'status' => 1
     );
+    
+    public static function removeNonCharacters($string) {
+        return preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $string);
+    }
 
     public static function addReview($data) {
         $data = array_merge(self::$review, $data);
+        foreach ($data as $key=>$value) {
+            switch ($key) {
+                case 'customer_id':
+                case 'product_id':
+                case 'rating':
+                case 'status':
+                    $data[$key] = (int) $value;
+                break;
+                default:
+                    $data[$key] = Core::escape((string) $value);
+            }   
+        }
+        
+        $data['text'] = self::removeNonCharacters($data['text']);
+        
+        $query = "SELECT `review_id`
+          FROM `" . DB_PREFIX . self::getTable() . "` 
+          WHERE `author` = '" .$data['author'] . "'
+          AND `customer_id` = '" . $data['customer_id'] . "'
+          AND `product_id` = '" . $data['product_id'] . "'
+          AND `text` = '" . $data['text'] . "'
+          AND `rating` = '" . $data['rating'] . "'
+          LIMIT 1;";
 
-        Core::query("INSERT INTO `" . DB_PREFIX . self::getTable() . "` SET" .
-        " `author` = '" . Core::escape($data['author']) . "'," .
-        " `customer_id` = '" . (int) $data['customer_id'] . "'," .
-        " `product_id` = '" . (int) $data['product_id'] . "'," .
-        " `text` = '" . Core::escape($data['text']) . "'," .
-        " `rating` = '" . (int) $data['rating'] . "'," .
-        " `status` = '" . (int) $data['status'] . "'," .
-        " `date_added` = '" . Core::escape($data['date_added']) . "'");
-
-        self::$asset = Core::lastId();
+        $row = Core::query($query);
+        
+        if (empty($row->row)) {
+            Core::query("INSERT INTO `" . DB_PREFIX . self::getTable() . "` SET" .
+            " `author` = '" . $data['author'] . "'," .
+            " `customer_id` = '" . $data['customer_id'] . "'," .
+            " `product_id` = '" . $data['product_id'] . "'," .
+            " `text` = '" . $data['text'] . "'," .
+            " `rating` = '" . $data['rating'] . "'," .
+            " `status` = '" . $data['status'] . "'," .
+            " `date_added` = '" . $data['date_added'] . "'");
+    
+            self::$asset = Core::lastId();
+        } else {
+            self::$asset = $row->row['review_id'];
+        }
 
         return self::$asset;
     }
