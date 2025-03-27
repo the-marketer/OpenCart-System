@@ -77,8 +77,9 @@ class Reviews
           AND `customer_id` = '" . $data['customer_id'] . "'
           AND `product_id` = '" . $data['product_id'] . "'
           AND `text` = '" . $data['text'] . "'
-          AND `rating` = '" . $data['rating'] . "'
-          LIMIT 1;";
+          AND `rating` = '" . $data['rating'] . "' "
+          // ."AND `date_added` = '" . $data['date_added'] . "' "
+          ."LIMIT 1;";
 
         $row = Core::query($query);
         
