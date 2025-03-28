@@ -307,13 +307,31 @@ class Observer
                     case 'account/newsletter|save':
                     case 'account/newsletter.save':
                     case 'account/newsletter':
+                        if (isset(Core::request()->post['newsletter'])) {
+                        self::$eventName = 'setEmail';
+                        
+                        self::$eventData = array(
+                            'email_address' => Core::customer()->getEmail(),
+                            // 'unsubscribe' => false
+                        );
+                        
+                        if (Core::request()->post['newsletter'] == 0) {
+                            self::$eventData['unsubscribe'] = true;
+                        }
+                        
+                        if (filter_var(self::$eventData['email_address'], FILTER_VALIDATE_EMAIL) !== false) {
+                            self::$do = false;
+                            self::SessionSet(self::$eventData['email_address']);
+                        }
+                    }
+                    break;
                     case 'journal3/settings':
                         if (isset(Core::request()->post['newsletter'])) {
                             self::$eventName = 'setEmail';
                             
                             self::$eventData = array(
                                 'email_address' => Core::customer()->getEmail(),
-                                //'unsubscribe' => false
+                                'unsubscribe' => false
                             );
                             
                             if (Core::request()->post['newsletter'] == 0) {
@@ -332,7 +350,7 @@ class Observer
                             
                             self::$eventData = array(
                                 'email_address' => Core::request()->post['email'],
-                                //'unsubscribe' => false
+                                'unsubscribe' => false
                             );
                             
                             if (isset(Core::request()->get['unsubscribe'])) {

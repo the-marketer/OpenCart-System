@@ -174,6 +174,7 @@ class Events
         j.src = "https://t.themarketer.com/t/j/" + i; f.parentNode.insertBefore(j, f);
     })(document, "script", "' . Config::getKey() . '");';
         $lines[] = 'window.mktr = window.mktr || {};';
+        $lines[] = 'if (typeof window.dataLayer == "undefined") { window.dataLayer = window.dataLayer || []; }';
         $lines[] = 'window.mktr.debug = function () { if (typeof dataLayer != undefined) { for (let i of dataLayer) { console.log("Mktr","Google",i); } } };';
         $lines[] = 'window.mktr.Loading = true;';
         $lines[] = 'window.mktr.version = "'.Config::$version.'";';

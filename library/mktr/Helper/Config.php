@@ -78,7 +78,7 @@ importScripts("https://t.themarketer.com/firebase.js");';
         'refund_status' => 11,
         'default_stock' => 0,
         'allow_export' => 0,
-        'selectors' => "button[type='button']",
+        'selectors' => "button[type='button'],.newsletter-form .btn",
         'brand' => 'brand',
         'color' => 'color',
         'size' => 'size',
