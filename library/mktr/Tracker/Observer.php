@@ -37,6 +37,7 @@ class Observer
 
         'extension/payment/cod/confirm' => 'saveOrder',
         'extension/payment/ipay/confirm' => 'saveOrder',
+        'extension/payment/librapay/callback' => 'saveOrder',
 
         'account/wishlist/add' => 'addToWishlist',
         'account/wishlist/remove' => 'removeFromWishlist',
@@ -222,6 +223,20 @@ class Observer
                             if (!empty($order) && array_key_exists('id', $order)) {
                                 $orderID = $order['id'];
                                 Core::setSessionData('mktr_order_id', []);
+                            }
+                        }
+                        if ($orderID !== null) {
+                            self::$do = false;
+                            self::saveOrder($orderID);
+                        }
+                    break;
+                    case 'extension/payment/librapay/callback':
+                        $order_prefix=2000000;
+                        $data = $_POST;
+                        $orderID = null;
+                        if (isset($data["ORDER"])) {
+                            if ($data["RC"] == "00") {
+                                $orderID = $data["ORDER"] - $order_prefix;
                             }
                         }
                         if ($orderID !== null) {
