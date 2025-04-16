@@ -61,6 +61,38 @@ class saveOrder
                         if (Api::getStatus() != 200) {
                             $allGood = false;
                         }
+                    } else if (Core::init()->journal3 !== null && is_object(Core::init()->journal3)) {
+                        $query = Core::query("SHOW TABLES LIKE '" . DB_PREFIX . "journal3_newsletter'");
+                        if ($query->num_rows) {
+                            $newsletter = Core::query("SELECT * FROM " . DB_PREFIX . "journal3_newsletter WHERE email = '" .  Core::escape($sOrder['email_address']) . "'");
+                            if ($newsletter->num_rows) {
+                                $name = array();
+                                $info = array( "email" => $sOrder['email_address'] );
+                                if (!empty($sOrder['firstname'])) {
+                                    $name[] = $sOrder['firstname'];
+                                }
+
+                                if (!empty($sOrder['lastname'])) {
+                                    $name[] = $sOrder['lastname'];
+                                }
+
+                                if (empty($name)) {
+                                    $info["name"] = explode("@", $info['email'])[0];
+                                } else {
+                                    $info["name"] = implode(" ", $name);
+                                }
+
+                                if (!empty($sOrder['phone'])) {
+                                    $info["phone"] = $sOrder['phone'];
+                                }
+                                
+                                Api::send("add_subscriber", $info);
+
+                                if (Api::getStatus() != 200) {
+                                    $allGood = false;
+                                }
+                            }
+                        }
                     }
                 }
             }
