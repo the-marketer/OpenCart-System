@@ -77,7 +77,7 @@ class saveOrder
                                 }
 
                                 if (empty($name)) {
-                                    $info["name"] = explode("@", $info['email'])[0];
+                                    $info["name"] = str_replace('.', ' ', explode("@", $info['email'])[0]);
                                 } else {
                                     $info["name"] = implode(" ", $name);
                                 }

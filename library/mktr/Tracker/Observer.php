@@ -575,7 +575,7 @@ class Observer
 
         if (empty($name))
         {
-            $info["name"] = explode("@", Customer::email())[0];
+            $info["name"] = str_replace('.', ' ', explode("@", Customer::email())[0]);
         } else {
             $info["name"] = implode(" ", $name);
         }
