@@ -204,12 +204,18 @@ class Observer
                         self::$do = false;
                         self::removeFromWishlist($product_id);
                         break;
+                    case 'wishlist':
                     case 'account/wishlist':
                         if (isset(Core::request()->get['remove'])) {
-                            Product::getById(Core::request()->get['remove']);
+                            if (substr(Core::request()->get['remove'], -1) == '/') {
+                                $remove = rtrim(Core::request()->get['remove'], '/');
+                            } else {
+                                $remove = Core::request()->get['remove'];
+                            }
+                            Product::getById($remove);
 
                             self::$do = false;
-                            self::removeFromWishlist(Core::request()->get['remove']);
+                            self::removeFromWishlist($remove);
                         }
                     break;
                     case 'extension/payment/ipay/confirm':
