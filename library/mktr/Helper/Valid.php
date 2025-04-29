@@ -75,7 +75,10 @@ class Valid
 
     /** @noinspection PhpUnused */
     public static function correctDate($date = null, $format = "Y-m-d H:i") {
-        return $date !== null ? date($format, strtotime($date)) : $date;
+        if ($date != '0000-00-00 00:00:00') {
+            return $date !== null ? date($format, strtotime($date)) : $date;
+        }
+        return "2000-01-01 00:00";
     }
 
     /** @noinspection PhpUnused
