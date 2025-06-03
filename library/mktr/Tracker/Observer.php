@@ -12,7 +12,7 @@ use Mktr\Helper\FileSystem;
 use Mktr\Helper\Model\Customer;
 use Mktr\Tracker\Model\Order;
 use Mktr\Tracker\Model\Product;
-
+use \Mktr\Helper\Model\Coupon;
 
 class Observer
 {
@@ -628,6 +628,50 @@ class Observer
 
         if (filter_var(self::$eventData['email_address'], FILTER_VALIDATE_EMAIL) !== false) {
             self::SessionSet(self::$eventData['email_address']);
+        }
+    }
+
+    public static function addToCartAndCheckout($product_id)
+    {
+        $quantity = 1;
+        $cart = Core::i()->cart;
+
+        $found = false;
+        foreach ($cart->getProducts() as $product) {
+            if ($product['product_id'] == $product_id) {
+                $found = true;
+                break;
+            }
+        }
+        if (!$found) {
+            $cart->add($product_id, $quantity, []);
+            Product::getById($product_id);
+            self::addToCart($product_id, $quantity, null);
+        }
+        header('Location: ' . Core::url()->link('checkout/cart'));
+        exit;
+    }
+
+    public static function mktrAutoapplyCoupon($code = null)
+    {
+        $cart = Core::i()->cart;
+
+        if ($code === null && isset($_GET['code'])) {
+            $code = $_GET['code'];
+        }
+        if (!empty($code)) {
+            if (empty($cart->getProducts())) {
+                Core::session()->data['error'] = 'Your cart is empty. Please add products to your cart before applying a discount code.';
+            } else {
+                if (Coupon::checkCode($code)) {
+                    Core::session()->data['coupon'] = $code;
+                    Core::session()->data['success'] = 'Coupon applied successfully!';
+                } else {
+                    Core::session()->data['error'] = 'Invalid discount code.';
+                }
+            }
+            header('Location: ' . Core::url()->link('checkout/cart'));
+            exit;
         }
     }
 

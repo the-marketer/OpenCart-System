@@ -40,6 +40,17 @@ trait Catalog {
                 unset($this->session->data['themarketer_remove']);
             }
         }
+
+        $autoAddToCart = Core::request()->get;
+        if (isset($autoAddToCart['mktrAddCart']) && isset($autoAddToCart['mktrPID'])) {
+            $mktrProductID = $autoAddToCart['mktrPID'];
+            Observer::addToCartAndCheckout($mktrProductID);
+        }
+
+        $autoApplyCoupon = Core::request()->get;
+        if (!empty($autoApplyCoupon['mktrAddDiscount']) && !empty($autoApplyCoupon['code'])) {
+            Observer::mktrAutoapplyCoupon($autoApplyCoupon['code']);
+        }
     }
 
     public static function init($registry = null, $th = null){

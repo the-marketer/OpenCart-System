@@ -39,7 +39,7 @@ class Config
     public static $dateFormat = "Y-m-d H:i";
     public static $vSeparator = "-";
 
-    public static $version = "v1.1.9";
+    public static $version = "v1.2.0";
 
     const space = "\n        ";
     const defMime = 'xml';
