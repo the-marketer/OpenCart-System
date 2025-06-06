@@ -160,14 +160,23 @@ class Core
     }
 
     public static function getSessionData($name = null) {
-        if (isset(Core::session()->data['Mktr_' . $name])) {
+        if (!empty(Core::session()->data['Mktr_' . $name])) {
             return Core::session()->data['Mktr_' . $name];
+        } else if(isset($_COOKIE['Mktr_' . $name])) {
+            $userData = unserialize($_COOKIE['Mktr_' . $name]);
+            return $userData;
         }
         return array();
     }
 
     public static function setSessionData($name, $value) {
         Core::session()->data['Mktr_' . $name] = $value;
+        if (empty($value)) {
+            setcookie('Mktr_' . $name, '', time() - 3600, '/');
+        } else {
+            $serializedData = serialize($value);
+            setcookie('Mktr_' . $name, $serializedData, time() + (86400 * 30), '/');
+        }
         return self::$init;
     }
 
