@@ -104,8 +104,10 @@ class Product
         if (isset(self::$valueNames[$n])) {
             if (isset(self::$asset[self::$valueNames[$n]])) {
                 self::$data[$n] = self::$asset[self::$valueNames[$n]];
-            } else {
+            } else if (method_exists('\Mktr\Tracker\Model\Product', self::$valueNames[$n])) {
                 self::$data[$n] = self::{self::$valueNames[$n]}();
+            } else {
+                self::$data[$n] = null;
             }
 
             return self::$data[$n];

@@ -61,30 +61,30 @@ class Feed
             {
                 Product::selectProduct($uniq);
                 
-                $oo = array(
-                    'id' => Product::id(),
-                    'sku' => Product::sku(),
-                    'name' => array('@cdata' => Product::name()),
-                    'description' => array('@cdata' => Product::description()),
-                    'url' => Product::url(),
-                    'main_image' => Product::main_image(),
-                    'category' => array('@cdata' => Product::category()),
-                    'brand' => array('@cdata' => Product::brand()),
-                    'acquisition_price' => Product::acquisition_price(),
-                    'price' => Product::price(),
-                    'sale_price' => Product::sale_price(),
-                    'sale_price_start_date' => Product::sale_price_start_date(),
-                    'sale_price_end_date' => Product::sale_price_end_date(),
-                    'availability' => Product::availability(),
-                    'stock' => Product::stock(),
-                    'media_gallery' => Product::media_gallery(),
-                    'variations' => array(
-                        'variation' => Product::variation()
-                    ),
-                    'created_at' => Product::created_at(),
-                );
-
                 if (Product::sale_price() > 0) {
+                    $oo = array(
+                        'id' => Product::id(),
+                        'sku' => Product::sku(),
+                        'name' => array('@cdata' => Product::name()),
+                        'description' => array('@cdata' => Product::description()),
+                        'url' => Product::url(),
+                        'main_image' => Product::main_image(),
+                        'category' => array('@cdata' => Product::category()),
+                        'brand' => array('@cdata' => Product::brand()),
+                        'acquisition_price' => Product::acquisition_price(),
+                        'price' => Product::price(),
+                        'sale_price' => Product::sale_price(),
+                        'sale_price_start_date' => Product::sale_price_start_date(),
+                        'sale_price_end_date' => Product::sale_price_end_date(),
+                        'availability' => Product::availability(),
+                        'stock' => Product::stock(),
+                        'media_gallery' => Product::media_gallery(),
+                        'variations' => array(
+                            'variation' => Product::variation()
+                        ),
+                        'created_at' => Product::created_at(),
+                    );
+
                     foreach ($oo as $key =>$val1) {
                         if ($key == 'variations') {
                             if (empty($val1['variation'])) {
