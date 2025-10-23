@@ -67,6 +67,8 @@ class Product
         'created_at' => 'getCreateAt',
         'tax_class_id' => 'tax_class_id'
     );
+    private static $comb = 0;
+    private static $combLimit = 0;
 
     private static $productsArgs = array(
         'limit' => 250,
@@ -171,7 +173,7 @@ class Product
     }
 
     public static function getProducts($arg = array()) {
-
+        self::$comb = 0;
         $arg['limit'] = Valid::getParam('limit', self::$productsArgs['limit']);
 
         self::$productsArgs = array_merge(self::$productsArgs, $arg);
@@ -191,6 +193,7 @@ class Product
     }
 
     public static function selectProduct($s) {
+        self::$comb = 0;
         self::$data = array();
         self::$asset = self::$products->rows[$s];
 
@@ -376,7 +379,8 @@ class Product
             $newPrefix = array_merge($prefix, [$attributeKey => $value]);
             if (empty($attributes)) {
                 $combinations[] = $newPrefix;
-            } else {
+            } else if (self::$combLimit == 0 || self::$combLimit != 0 && self::$comb < self::$combLimit){
+                self::$comb++;
                 $combinations = array_merge($combinations, self::buildCombinations($attributes, $newPrefix));
             }
         }
