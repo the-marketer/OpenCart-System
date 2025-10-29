@@ -42,6 +42,8 @@ class Product
     private static $asset = null;
     private static $data = array();
     private static $addTax = true;
+    private static $addStoreToSpecial = false;
+    private static $StoreID = null;
 
     private static $valueNames = array(
         'id' => 'product_id',
@@ -67,6 +69,8 @@ class Product
         'created_at' => 'getCreateAt',
         'tax_class_id' => 'tax_class_id'
     );
+    private static $comb = 0;
+    private static $combLimit = 0;
 
     private static $productsArgs = array(
         'limit' => 250,
@@ -90,6 +94,13 @@ class Product
 
     public static function __callStatic($n, $a) {
         return self::getValue($n);
+    }
+
+    public static function getStoreID() {
+        if(self::$StoreID === null) {
+            self::$StoreID = (int) Core::ocConfig('config_store_id');
+        }
+        return self::$StoreID;
     }
 
     public static function getValue($n) {
@@ -129,11 +140,23 @@ class Product
     }
 
     private static function sqlQuery() {
-        return "SELECT DISTINCT *," .
-        " p.`image`," .
-        " p.`sort_order`," .
-        " pd.`name` AS name," .
-        " m.`name` AS manufacturer," .
+        if (self::$addStoreToSpecial) {
+            return "SELECT DISTINCT *, p.`image`, p.`sort_order`, pd.`name` AS name, m.`name` AS manufacturer," .
+            // " (SELECT `points` FROM `" . DB_PREFIX . "product_reward` pr WHERE pr.`product_id` = p.`product_id` AND pr.`customer_group_id` = '" . (int) Core::ocConfig('config_customer_group_id') . "') AS `reward`," .
+            // " (SELECT wcd.`unit` FROM `" . DB_PREFIX . "weight_class_description` wcd WHERE p.`weight_class_id` = wcd.`weight_class_id` AND wcd.`language_id` = '" . (int) Core::ocConfig('config_language_id') . "') AS `weight_class`," .
+            // " (SELECT lcd.`unit` FROM `" . DB_PREFIX . "length_class_description` lcd WHERE p.`length_class_id` = lcd.`length_class_id` AND lcd.`language_id` = '" . (int) Core::ocConfig('config_language_id') . "') AS length_class," .
+            // " (SELECT AVG(`rating`) AS `total` FROM `" . DB_PREFIX . "review` r1 WHERE r1.`product_id` = p.`product_id` AND r1.`status` = '1' GROUP BY r1.`product_id`) AS `rating`," .
+            // " (SELECT COUNT(*) AS `total` FROM `" . DB_PREFIX . "review` r2 WHERE r2.`product_id` = p.`product_id` AND r2.`status` = '1' GROUP BY r2.`product_id`) AS `reviews`," .
+            " (SELECT ss.`name` FROM `" . DB_PREFIX . "stock_status` ss WHERE ss.`stock_status_id` = p.`stock_status_id` AND ss.`language_id` = '" . (int) Core::ocConfig('config_language_id') . "') AS `stock_status`," .
+            " (SELECT `price` FROM `" . DB_PREFIX . "product_discount` pd2 WHERE pd2.`product_id` = p.`product_id` AND pd2.`customer_group_id` = '" . (int) Core::ocConfig('config_customer_group_id') . "' AND pd2.`quantity` = '1' AND ((pd2.`date_start` = '0000-00-00' OR pd2.`date_start` < NOW()) AND (pd2.`date_end` = '0000-00-00' OR pd2.`date_end` > NOW())) ORDER BY pd2.`priority` ASC, pd2.`price` ASC LIMIT 1) AS `discount`," .
+            " (SELECT `price` FROM `" . DB_PREFIX . "product_special` ps WHERE ps.`product_id` = p.`product_id` AND ps.`customer_group_id` = '" . (int) Core::ocConfig('config_customer_group_id') . "' AND ((ps.`date_start` = '0000-00-00' OR ps.`date_start` < NOW()) AND (ps.`date_end` = '0000-00-00' OR ps.`date_end` > NOW())) AND ps.`store_id` = '" . self::getStoreID() . "' ORDER BY ps.`priority` ASC, ps.`price` ASC LIMIT 1) AS `special`," .
+            " (SELECT `price` FROM `" . DB_PREFIX . "product_price_to_store` prs WHERE prs.`product_id` = p.`product_id` AND prs.`store_id` = '" . self::getStoreID() . "' LIMIT 1) AS `price`" .
+            " FROM `" . DB_PREFIX . "product` p" .
+            " LEFT JOIN `" . DB_PREFIX . "product_description` pd ON (p.`product_id` = pd.`product_id`)" .
+            " LEFT JOIN `" . DB_PREFIX . "product_to_store` p2s ON (p.`product_id` = p2s.`product_id` AND p.`status` = '1')" .
+            " LEFT JOIN `" . DB_PREFIX . "manufacturer` m ON (p.`manufacturer_id` = m.`manufacturer_id`)";
+        }
+        return "SELECT DISTINCT *, p.`image`, p.`sort_order`, pd.`name` AS name, m.`name` AS manufacturer," .
         // " (SELECT `points` FROM `" . DB_PREFIX . "product_reward` pr WHERE pr.`product_id` = p.`product_id` AND pr.`customer_group_id` = '" . (int) Core::ocConfig('config_customer_group_id') . "') AS `reward`," .
         // " (SELECT wcd.`unit` FROM `" . DB_PREFIX . "weight_class_description` wcd WHERE p.`weight_class_id` = wcd.`weight_class_id` AND wcd.`language_id` = '" . (int) Core::ocConfig('config_language_id') . "') AS `weight_class`," .
         // " (SELECT lcd.`unit` FROM `" . DB_PREFIX . "length_class_description` lcd WHERE p.`length_class_id` = lcd.`length_class_id` AND lcd.`language_id` = '" . (int) Core::ocConfig('config_language_id') . "') AS length_class," .
@@ -152,7 +175,10 @@ class Product
 
         /** TODO: (int)$product_id |  AND p.`status` = '1' **/
         /** TODO: pd.`language_id` = '" . (int)Core::ocConfig('config_language_id') . "' AND p.`status` = '1' **/
-        $sql = self::sqlQuery() . " WHERE p.`product_id` = '" . (int) $product_id . "' AND pd.`language_id` = '" . (int) Core::ocConfig('config_language_id') . "' AND p.`date_available` <= NOW() AND p2s.`store_id` = '" . (int) Core::ocConfig('config_store_id') . "'";
+        $sql = self::sqlQuery() .
+        " WHERE p.`product_id` = '" . (int) $product_id . "' AND" .
+        " pd.`language_id` = '" . (int) Core::ocConfig('config_language_id') . "' AND" .
+        " p.`date_available` <= NOW() AND p2s.`store_id` = '" . self::getStoreID() . "'";
         $query = Core::query($sql);
 
         if ($query->num_rows) {
@@ -171,7 +197,7 @@ class Product
     }
 
     public static function getProducts($arg = array()) {
-
+        self::$comb = 0;
         $arg['limit'] = Valid::getParam('limit', self::$productsArgs['limit']);
 
         self::$productsArgs = array_merge(self::$productsArgs, $arg);
@@ -182,7 +208,10 @@ class Product
 
         $offset = (($page - 1) * $limit);
 
-        $sql = self::sqlQuery() . " WHERE pd.`language_id` = '" . (int) Core::ocConfig('config_language_id') . "' AND p.`date_available` <= NOW() AND p2s.`store_id` = '" . (int) Core::ocConfig('config_store_id') . "'" .
+        $sql = self::sqlQuery() . 
+        " WHERE  pd.`language_id` = '" . (int) Core::ocConfig('config_language_id') . "' AND" .
+        " p.`date_available` <= NOW() AND" .
+        " p2s.`store_id` = '" . self::getStoreID() . "'" .
         " ORDER BY p.`product_id` LIMIT " . $limit . " OFFSET " . $offset;
         
         self::$products = Core::query($sql);
@@ -191,6 +220,7 @@ class Product
     }
 
     public static function selectProduct($s) {
+        self::$comb = 0;
         self::$data = array();
         self::$asset = self::$products->rows[$s];
 
@@ -300,7 +330,13 @@ class Product
 
     
     public static function getSalePriceDate() {
-        $query = Core::query("SELECT `price`,`date_start`,`date_end`  FROM " . DB_PREFIX . "product_special WHERE product_id = '" . (int) self::id() . "' AND customer_group_id = '" . (int) Core::ocConfig('config_customer_group_id') . "' AND ((date_start = '0000-00-00' OR date_start < NOW()) AND (date_end = '0000-00-00' OR date_end > NOW())) ORDER BY priority ASC, price ASC LIMIT 1");
+        if (self::$addStoreToSpecial) {
+            $query = Core::query("SELECT `price`,`date_start`,`date_end`  FROM " . DB_PREFIX . "product_special" .
+            " WHERE product_id = '" . (int) self::id() . "' AND customer_group_id = '" . (int) Core::ocConfig('config_customer_group_id') . "' AND ((date_start = '0000-00-00' OR date_start < NOW()) AND (date_end = '0000-00-00' OR date_end > NOW())) AND `store_id` = '" . self::getStoreID() . "' ORDER BY priority ASC, price ASC LIMIT 1");
+        } else {
+            $query = Core::query("SELECT `price`,`date_start`,`date_end`  FROM " . DB_PREFIX . "product_special" .
+            " WHERE product_id = '" . (int) self::id() . "' AND customer_group_id = '" . (int) Core::ocConfig('config_customer_group_id') . "' AND ((date_start = '0000-00-00' OR date_start < NOW()) AND (date_end = '0000-00-00' OR date_end > NOW())) ORDER BY priority ASC, price ASC LIMIT 1");
+        }
 
         if ($query->num_rows) {
             self::$data['sale_price_start_date'] = $query->row['date_start'] == '0000-00-00' || $query->row['date_start'] == '0000-00-00 00:00:00' ? null : Valid::correctDate($query->row['date_start']);
@@ -376,7 +412,8 @@ class Product
             $newPrefix = array_merge($prefix, [$attributeKey => $value]);
             if (empty($attributes)) {
                 $combinations[] = $newPrefix;
-            } else {
+            } else if (self::$combLimit == 0 || self::$combLimit != 0 && self::$comb < self::$combLimit){
+                self::$comb++;
                 $combinations = array_merge($combinations, self::buildCombinations($attributes, $newPrefix));
             }
         }
@@ -537,6 +574,10 @@ class Product
 
                         if ($newVariation['price'] < $newVariation['sale_price']) {
                             $newVariation['price'] = $newVariation['sale_price'];
+                        }
+
+                        if ($val0['quantity'] < 0) {
+                           $val0['quantity'] = Config::getDefaultStock();
                         }
 
                         if ($newVariation['stock'] === 0) {
