@@ -69,7 +69,7 @@ class Reviews
             }   
         }
         
-        $data['text'] = self::removeNonCharacters($data['text']);
+        $data['text'] = Core::escape(self::removeNonCharacters($data['text']));
         
         $query = "SELECT `review_id`
           FROM `" . DB_PREFIX . self::getTable() . "` 
