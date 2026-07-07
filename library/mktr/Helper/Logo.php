@@ -53,7 +53,7 @@ class Logo
     }
 
     private static function getRep($format) {
-        return preg_replace_callback('/{(.+?)}/i', 'self::getStrip', $format);
+        return preg_replace_callback('/{(.+?)}/i', array(__CLASS__, 'getStrip'), $format);
     }
     public static function getMenuTitle($Module = null) {
         self::setDef();

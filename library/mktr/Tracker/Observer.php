@@ -112,7 +112,7 @@ class Observer
         if (self::$do === false) { return self::$init; }
 
         if ($route !== null) {
-            if ($route === 'journal3/settings' && $route !== Core::request()->get['route']) {
+            if ($route === 'journal3/settings' && isset(Core::request()->get['route']) && $route !== Core::request()->get['route']) {
                 $route = Core::request()->get['route'];
             }
             if (array_key_exists('order_id', Core::session()->data)) {
