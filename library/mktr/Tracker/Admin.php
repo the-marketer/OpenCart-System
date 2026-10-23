@@ -500,6 +500,7 @@ $out[] = '</div>';
         }
 
         /* magazinele care aveau modulul instalat dinainte nu trec prin install() */
+        Install::fixEvents();
         Install::addCron();
 
         Form::initProcess();
@@ -875,6 +876,7 @@ $out[] = '</div>';
             Core::i()->model_setting_setting->editSetting('mktr_tracker', $settings);
         }
 
+        Install::fixEvents();
         Install::addCron();
 
         self::checkModule();

@@ -63,7 +63,7 @@ class saveOrder
                         if (Api::getStatus() != 200) {
                             $allGood = false;
                         }
-                    } else if (Core::init()->journal3 !== null && is_object(Core::init()->journal3)) {
+                    } else if (Core::has('journal3') && is_object(Core::init()->journal3)) {
                         $query = Core::query("SHOW TABLES LIKE '" . DB_PREFIX . "journal3_newsletter'");
                         if ($query->num_rows) {
                             $newsletter = Core::query("SELECT * FROM " . DB_PREFIX . "journal3_newsletter WHERE email = '" .  Core::escape($sOrder['email_address']) . "'");

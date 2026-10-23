@@ -53,6 +53,8 @@ class Cron
     const FIRST_RUN_HOURS = 24;
     /* comenzile mai noi de atât sunt încă treaba browserului (saveOrder) */
     const BROWSER_MINUTES = 10;
+    /* cât de departe în urmă comparăm statusurile direct (vezi sweepRecent) */
+    const SWEEP_DAYS = 30;
 
     private static $started = 0;
     private static $used = 0;
@@ -91,6 +93,7 @@ class Cron
         try {
             self::retryFailed($logs, $result);
             self::syncRecent($logs, $result);
+            self::sweepRecent($logs, $result);
 
             if ($from !== null) {
                 $result['backfill_done'] = self::backfill($logs, $from, $result) ? 1 : 0;
@@ -238,11 +241,22 @@ class Cron
         while ($scanned < self::RECONCILE_SCAN && self::hasBudget()) {
             $date = Core::escape($cursor[0]);
 
-            $rows = Core::query("SELECT `order_id`, `order_status_id`, `date_modified` FROM `" . DB_PREFIX . "order`" .
-                " WHERE `store_id` = '" . (int) Core::getStoreID() . "' AND `order_status_id` > '0'" .
-                " AND (`date_modified` > '" . $date . "' OR (`date_modified` = '" . $date . "' AND `order_id` > '" . (int) $cursor[1] . "'))" .
-                " AND `date_modified` <= DATE_SUB(NOW(), INTERVAL " . self::BROWSER_MINUTES . " MINUTE)" .
-                " ORDER BY `date_modified` ASC, `order_id` ASC LIMIT " . self::RECONCILE_PAGE)->rows;
+            /*
+             * Momentul ultimei schimbări = cel mai nou dintre date_modified și ultimul
+             * rând din order_history. OC 4.1 nu mai atinge date_modified când schimbă
+             * statusul, dar toate versiunile (1.5 - 4.1) scriu în order_history.
+             */
+            $rows = Core::query("SELECT o.`order_id`, o.`order_status_id`, c.`changed_at` FROM (" .
+                " SELECT `order_id`, MAX(`changed_at`) AS `changed_at` FROM (" .
+                "  SELECT `order_id`, `date_modified` AS `changed_at` FROM `" . DB_PREFIX . "order` WHERE `date_modified` >= '" . $date . "'" .
+                "  UNION ALL" .
+                "  SELECT `order_id`, `date_added` AS `changed_at` FROM `" . DB_PREFIX . "order_history` WHERE `date_added` >= '" . $date . "'" .
+                " ) x GROUP BY `order_id`" .
+                ") c INNER JOIN `" . DB_PREFIX . "order` o ON (o.`order_id` = c.`order_id`)" .
+                " WHERE o.`store_id` = '" . (int) Core::getStoreID() . "' AND o.`order_status_id` > '0'" .
+                " AND (c.`changed_at` > '" . $date . "' OR (c.`changed_at` = '" . $date . "' AND o.`order_id` > '" . (int) $cursor[1] . "'))" .
+                " AND c.`changed_at` <= DATE_SUB(NOW(), INTERVAL " . self::BROWSER_MINUTES . " MINUTE)" .
+                " ORDER BY c.`changed_at` ASC, o.`order_id` ASC LIMIT " . self::RECONCILE_PAGE)->rows;
 
             foreach ($rows as $row) {
                 if (!self::hasBudget()) {
@@ -252,7 +266,7 @@ class Cron
                 /* ce eșuează intră în lista de reîncercări, cursorul merge mai departe */
                 self::syncOrder($logs, (int) $row['order_id'], (int) $row['order_status_id'], $result);
 
-                $cursor = array($row['date_modified'], (int) $row['order_id']);
+                $cursor = array($row['changed_at'], (int) $row['order_id']);
                 $scanned++;
             }
 
@@ -262,6 +276,33 @@ class Cron
         }
 
         $logs->setMeta($key, $cursor);
+    }
+
+    /**
+     * Unele module de curierat schimbă `order_status_id` direct, fără istoric și fără
+     * date_modified - nu lasă nicio urmă după care să mergem. Pentru comenzile din
+     * ultimele SWEEP_DAYS zile comparăm direct statusul cu cel din registru.
+     * Doar comenzile cu status trimis cunoscut: nimic nu se retrimite după un upgrade.
+     */
+    private static function sweepRecent($logs, &$result) {
+        $rows = Core::query("SELECT `order_id`, `order_status_id` FROM `" . DB_PREFIX . "order`" .
+            " WHERE `store_id` = '" . (int) Core::getStoreID() . "' AND `order_status_id` > '0'" .
+            " AND `date_added` >= DATE_SUB(NOW(), INTERVAL " . self::SWEEP_DAYS . " DAY)" .
+            " AND `date_added` <= DATE_SUB(NOW(), INTERVAL " . self::BROWSER_MINUTES . " MINUTE)")->rows;
+
+        foreach ($rows as $row) {
+            $known = $logs->statusOf($row['order_id']);
+
+            if ($known === null || $known === OrderLogs::UNKNOWN || $known === (int) $row['order_status_id']) {
+                continue;
+            }
+
+            if (!self::hasBudget()) {
+                return;
+            }
+
+            self::syncOrder($logs, (int) $row['order_id'], (int) $row['order_status_id'], $result);
+        }
     }
 
     /**

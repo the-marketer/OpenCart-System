@@ -57,6 +57,20 @@ class Install
             " `action` = '" . Core::escape($action) . "', `status` = '1', `date_added` = NOW(), `date_modified` = NOW()");
     }
 
+    /**
+     * De la OC 4.0.2 rutele se scriu "sale/order.call", nu "sale/order|call". Evenimentele
+     * înregistrate cu "|" nu se mai declanșează, deci statusurile schimbate din admin nu
+     * plecau la theMarketer. Corectăm și instalările existente.
+     */
+    public static function fixEvents() {
+        if (!defined('VERSION') || version_compare(VERSION, '4.0.2.0', '<')) {
+            return;
+        }
+
+        Core::query("UPDATE `" . DB_PREFIX . "event` SET `trigger` = REPLACE(`trigger`, '|', '.')" .
+            " WHERE `code` = '" . Core::escape(Core::getModuleCode()) . "' AND `trigger` LIKE '%|%'");
+    }
+
     public static function deleteCron() {
         if (!defined('VERSION') || version_compare(VERSION, '4.0.0.0', '<')) {
             return;

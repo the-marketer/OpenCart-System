@@ -116,6 +116,22 @@ class Core
         return $send;
     }
 
+    /**
+     * Există cheia în registry-ul OpenCart? Pe OC4 `$controller->cheie_lipsa` aruncă
+     * "Could not call registry key", pe OC 1.5 - 3.x întorcea doar null.
+     */
+    public static function has($key) {
+        if (self::$registry !== null && method_exists(self::$registry, 'has')) {
+            return self::$registry->has($key);
+        }
+
+        try {
+            return self::$init->{$key} !== null;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
     public static function token() {
         if (self::$tkn === null) {
             self::$tkn =
