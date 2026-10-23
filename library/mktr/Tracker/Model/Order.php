@@ -225,6 +225,13 @@ class Order
         return self::getFromStatusList(self::order_status_id());
     }
 
+    /* statusul curent din baza de date, fără să încarce toată comanda */
+    public static function getStatusId($id) {
+        $query = Core::query("SELECT `order_status_id` FROM `" . DB_PREFIX . "order` WHERE `order_id` = '" . (int) $id . "' LIMIT 1");
+
+        return $query->num_rows ? (int) $query->row['order_status_id'] : null;
+    }
+
     public static function getRefund()
     {
         $refund = 0;
@@ -366,20 +373,42 @@ class Order
                     "variation_sku" => $sku
                 );
             } else {
-                Product::getById($p['product_id']);
-                $send = array(
-                    "product_id" => Product::id(),
-                    "name" => $p['name'],
-                    "url" => Product::getUrl(),
-                    "main_image" => Product::main_image(),
-                    "category" => Product::category(),
-                    "brand" => Product::brand(),
-                    "price" => Core::digit2(Product::price()),
-                    "sale_price" => Core::digit2($p['price']),
-                    "quantity" => $p['quantity'],
-                    "variation_id" => $id,
-                    "variation_sku" => $sku
-                );
+                Product::getById($p['product_id'], false);
+
+                if (Product::id() === null) {
+                    /**
+                     * Produs disparut complet din catalog. Trimitem ce stim din comanda
+                     * si nu mai atingem modelul de produs - o singura linie stricata nu
+                     * trebuie sa doboare toata pagina de export.
+                     */
+                    $send = array(
+                        "product_id" => $p['product_id'],
+                        "name" => $p['name'],
+                        "url" => "",
+                        "main_image" => "",
+                        "category" => "Default Category",
+                        "brand" => "N/A",
+                        "price" => Core::digit2($p['price']),
+                        "sale_price" => Core::digit2($p['price']),
+                        "quantity" => $p['quantity'],
+                        "variation_id" => $id,
+                        "variation_sku" => $sku
+                    );
+                } else {
+                    $send = array(
+                        "product_id" => Product::id(),
+                        "name" => $p['name'],
+                        "url" => Product::getUrl(),
+                        "main_image" => Product::main_image(),
+                        "category" => Product::category(),
+                        "brand" => Product::brand(),
+                        "price" => Core::digit2(Product::price()),
+                        "sale_price" => Core::digit2($p['price']),
+                        "quantity" => $p['quantity'],
+                        "variation_id" => $id,
+                        "variation_sku" => $sku
+                    );
+                }
             }
 
             $products[] = $send;

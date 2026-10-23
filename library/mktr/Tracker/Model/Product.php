@@ -44,6 +44,8 @@ class Product
     private static $addTax = true;
     private static $addStoreToSpecial = false;
     private static $StoreID = null;
+    private static $specialMode = null;
+    private static $discountColumns = null;
 
     private static $valueNames = array(
         'id' => 'product_id',
@@ -148,8 +150,8 @@ class Product
             // " (SELECT AVG(`rating`) AS `total` FROM `" . DB_PREFIX . "review` r1 WHERE r1.`product_id` = p.`product_id` AND r1.`status` = '1' GROUP BY r1.`product_id`) AS `rating`," .
             // " (SELECT COUNT(*) AS `total` FROM `" . DB_PREFIX . "review` r2 WHERE r2.`product_id` = p.`product_id` AND r2.`status` = '1' GROUP BY r2.`product_id`) AS `reviews`," .
             " (SELECT ss.`name` FROM `" . DB_PREFIX . "stock_status` ss WHERE ss.`stock_status_id` = p.`stock_status_id` AND ss.`language_id` = '" . (int) Core::ocConfig('config_language_id') . "') AS `stock_status`," .
-            " (SELECT `price` FROM `" . DB_PREFIX . "product_discount` pd2 WHERE pd2.`product_id` = p.`product_id` AND pd2.`customer_group_id` = '" . (int) Core::ocConfig('config_customer_group_id') . "' AND pd2.`quantity` = '1' AND ((pd2.`date_start` = '0000-00-00' OR pd2.`date_start` < NOW()) AND (pd2.`date_end` = '0000-00-00' OR pd2.`date_end` > NOW())) ORDER BY pd2.`priority` ASC, pd2.`price` ASC LIMIT 1) AS `discount`," .
-            " (SELECT `price` FROM `" . DB_PREFIX . "product_special` ps WHERE ps.`product_id` = p.`product_id` AND ps.`customer_group_id` = '" . (int) Core::ocConfig('config_customer_group_id') . "' AND ((ps.`date_start` = '0000-00-00' OR ps.`date_start` < NOW()) AND (ps.`date_end` = '0000-00-00' OR ps.`date_end` > NOW())) AND ps.`store_id` = '" . self::getStoreID() . "' ORDER BY ps.`priority` ASC, ps.`price` ASC LIMIT 1) AS `special`," .
+            self::discountSql() . "," .
+            self::specialSql() . "," .
             " (SELECT `price` FROM `" . DB_PREFIX . "product_price_to_store` prs WHERE prs.`product_id` = p.`product_id` AND prs.`store_id` = '" . self::getStoreID() . "' LIMIT 1) AS `price`" .
             " FROM `" . DB_PREFIX . "product` p" .
             " LEFT JOIN `" . DB_PREFIX . "product_description` pd ON (p.`product_id` = pd.`product_id`)" .
@@ -163,23 +165,119 @@ class Product
         // " (SELECT AVG(`rating`) AS `total` FROM `" . DB_PREFIX . "review` r1 WHERE r1.`product_id` = p.`product_id` AND r1.`status` = '1' GROUP BY r1.`product_id`) AS `rating`," .
         // " (SELECT COUNT(*) AS `total` FROM `" . DB_PREFIX . "review` r2 WHERE r2.`product_id` = p.`product_id` AND r2.`status` = '1' GROUP BY r2.`product_id`) AS `reviews`," .
         " (SELECT ss.`name` FROM `" . DB_PREFIX . "stock_status` ss WHERE ss.`stock_status_id` = p.`stock_status_id` AND ss.`language_id` = '" . (int) Core::ocConfig('config_language_id') . "') AS `stock_status`," .
-        " (SELECT `price` FROM `" . DB_PREFIX . "product_discount` pd2 WHERE pd2.`product_id` = p.`product_id` AND pd2.`customer_group_id` = '" . (int) Core::ocConfig('config_customer_group_id') . "' AND pd2.`quantity` = '1' AND ((pd2.`date_start` = '0000-00-00' OR pd2.`date_start` < NOW()) AND (pd2.`date_end` = '0000-00-00' OR pd2.`date_end` > NOW())) ORDER BY pd2.`priority` ASC, pd2.`price` ASC LIMIT 1) AS `discount`," .
-        " (SELECT `price` FROM `" . DB_PREFIX . "product_special` ps WHERE ps.`product_id` = p.`product_id` AND ps.`customer_group_id` = '" . (int) Core::ocConfig('config_customer_group_id') . "' AND ((ps.`date_start` = '0000-00-00' OR ps.`date_start` < NOW()) AND (ps.`date_end` = '0000-00-00' OR ps.`date_end` > NOW())) ORDER BY ps.`priority` ASC, ps.`price` ASC LIMIT 1) AS `special`" .
+        self::discountSql() . "," .
+        self::specialSql() .
         " FROM `" . DB_PREFIX . "product` p" .
         " LEFT JOIN `" . DB_PREFIX . "product_description` pd ON (p.`product_id` = pd.`product_id`)" .
         " LEFT JOIN `" . DB_PREFIX . "product_to_store` p2s ON (p.`product_id` = p2s.`product_id` AND p.`status` = '1')" .
         " LEFT JOIN `" . DB_PREFIX . "manufacturer` m ON (p.`manufacturer_id` = m.`manufacturer_id`)";
     }
 
-    public static function getProduct($product_id) {
+    /**
+     * OpenCart 4.1 a desființat tabelul `product_special`: specialele stau acum în
+     * `product_discount` cu `special` = 1, iar `type` spune dacă valoarea e preț fix,
+     * procent (P) sau sumă scăzută (S). Ne luăm după schema din baza de date, nu după
+     * VERSION, ca să meargă și pe magazinele migrate din OC3 sau modificate de mână.
+     */
+    private static function specialMode() {
+        if (self::$specialMode === null) {
+            $columns = self::discountColumns();
+
+            if (isset($columns['special'])) {
+                self::$specialMode = 'discount';
+            } else if (Core::query("SHOW TABLES LIKE '" . DB_PREFIX . "product_special'")->num_rows) {
+                self::$specialMode = 'table';
+            } else {
+                self::$specialMode = 'none';
+            }
+        }
+        return self::$specialMode;
+    }
+
+    private static function discountColumns() {
+        if (self::$discountColumns === null) {
+            self::$discountColumns = array();
+
+            foreach (Core::query("SHOW COLUMNS FROM `" . DB_PREFIX . "product_discount`")->rows as $row) {
+                self::$discountColumns[$row['Field']] = true;
+            }
+        }
+        return self::$discountColumns;
+    }
+
+    /* prețul final al unei linii din product_discount, la fel cum îl calculează OC 4.1 */
+    private static function discountPrice($a) {
+        $columns = self::discountColumns();
+
+        if (!isset($columns['type'])) {
+            return $a . ".`price`";
+        }
+
+        return "(CASE WHEN " . $a . ".`type` = 'P' THEN (p.`price` - (p.`price` * (" . $a . ".`price` / 100)))" .
+            " WHEN " . $a . ".`type` = 'S' THEN (p.`price` - " . $a . ".`price`) ELSE " . $a . ".`price` END)";
+    }
+
+    private static function activeSql($a) {
+        return "((" . $a . ".`date_start` = '0000-00-00' OR " . $a . ".`date_start` < NOW()) AND (" . $a . ".`date_end` = '0000-00-00' OR " . $a . ".`date_end` > NOW()))";
+    }
+
+    private static function discountSql() {
+        $onlyDiscount = self::specialMode() === 'discount' ? " AND pd2.`special` = '0'" : "";
+
+        return " (SELECT " . self::discountPrice('pd2') . " FROM `" . DB_PREFIX . "product_discount` pd2" .
+            " WHERE pd2.`product_id` = p.`product_id` AND pd2.`customer_group_id` = '" . (int) Core::ocConfig('config_customer_group_id') . "'" .
+            " AND pd2.`quantity` = '1'" . $onlyDiscount . " AND " . self::activeSql('pd2') .
+            " ORDER BY pd2.`priority` ASC, pd2.`price` ASC LIMIT 1) AS `discount`";
+    }
+
+    private static function specialSql() {
+        if (self::specialMode() === 'none') {
+            return " NULL AS `special`";
+        }
+
+        $price = self::specialMode() === 'discount' ? self::discountPrice('ps') : "ps.`price`";
+
+        return " (SELECT " . $price . self::specialFrom('ps') . " AND ps.`product_id` = p.`product_id`" .
+            " ORDER BY ps.`priority` ASC, ps.`price` ASC LIMIT 1) AS `special`";
+    }
+
+    /* FROM + WHERE pentru special, pe oricare din cele două scheme */
+    private static function specialFrom($a) {
+        if (self::specialMode() === 'discount') {
+            $sql = " FROM `" . DB_PREFIX . "product_discount` " . $a .
+                " WHERE " . $a . ".`special` = '1' AND " . $a . ".`quantity` = '1' AND";
+        } else {
+            $sql = " FROM `" . DB_PREFIX . "product_special` " . $a . " WHERE";
+        }
+
+        $sql .= " " . $a . ".`customer_group_id` = '" . (int) Core::ocConfig('config_customer_group_id') . "' AND " . self::activeSql($a);
+
+        if (self::$addStoreToSpecial && self::specialMode() === 'table') {
+            $sql .= " AND " . $a . ".`store_id` = '" . self::getStoreID() . "'";
+        }
+
+        return $sql;
+    }
+
+    public static function getProduct($product_id, $visibleOnly = true) {
 
         /** TODO: (int)$product_id |  AND p.`status` = '1' **/
         /** TODO: pd.`language_id` = '" . (int)Core::ocConfig('config_language_id') . "' AND p.`status` = '1' **/
-        $sql = self::sqlQuery() .
-        " WHERE p.`product_id` = '" . (int) $product_id . "' AND" .
-        " pd.`language_id` = '" . (int) Core::ocConfig('config_language_id') . "' AND" .
-        " p.`date_available` <= NOW() AND p2s.`store_id` = '" . self::getStoreID() . "'";
+        $where = " WHERE p.`product_id` = '" . (int) $product_id . "' AND" .
+        " pd.`language_id` = '" . (int) Core::ocConfig('config_language_id') . "'";
+
+        $sql = self::sqlQuery() . $where .
+        " AND p.`date_available` <= NOW() AND p2s.`store_id` = '" . self::getStoreID() . "'";
         $query = Core::query($sql);
+
+        /**
+         * O linie de comanda e data istorica, nu catalog: produsul trebuie rezolvat
+         * si daca intre timp a fost dezactivat, scos din magazin sau are
+         * date_available in viitor. Altfel tot ce urmeaza lucreaza pe un asset gol.
+         */
+        if (!$query->num_rows && !$visibleOnly) {
+            $query = Core::query(self::sqlQuery() . $where . " LIMIT 1");
+        }
 
         if ($query->num_rows) {
             $product_data = $query->row;
@@ -234,14 +332,14 @@ class Product
         return self::init();
     }
 
-    public static function getById($id = null) {
+    public static function getById($id = null, $visibleOnly = true) {
         if ($id === null && isset(Core::request()->get['product_id'])) {
             $id = Core::request()->get['product_id'];
         }
 
         if ($id !== null) {
             self::$data = array();
-            self::$asset = self::getProduct($id);
+            self::$asset = self::getProduct($id, $visibleOnly);
         }
 
         return self::init();
@@ -330,13 +428,14 @@ class Product
 
     
     public static function getSalePriceDate() {
-        if (self::$addStoreToSpecial) {
-            $query = Core::query("SELECT `price`,`date_start`,`date_end`  FROM " . DB_PREFIX . "product_special" .
-            " WHERE product_id = '" . (int) self::id() . "' AND customer_group_id = '" . (int) Core::ocConfig('config_customer_group_id') . "' AND ((date_start = '0000-00-00' OR date_start < NOW()) AND (date_end = '0000-00-00' OR date_end > NOW())) AND `store_id` = '" . self::getStoreID() . "' ORDER BY priority ASC, price ASC LIMIT 1");
-        } else {
-            $query = Core::query("SELECT `price`,`date_start`,`date_end`  FROM " . DB_PREFIX . "product_special" .
-            " WHERE product_id = '" . (int) self::id() . "' AND customer_group_id = '" . (int) Core::ocConfig('config_customer_group_id') . "' AND ((date_start = '0000-00-00' OR date_start < NOW()) AND (date_end = '0000-00-00' OR date_end > NOW())) ORDER BY priority ASC, price ASC LIMIT 1");
+        if (self::specialMode() === 'none') {
+            self::$data['sale_price_start_date'] = null;
+            self::$data['sale_price_end_date'] = null;
+            return;
         }
+
+        $query = Core::query("SELECT ps.`date_start`, ps.`date_end`" . self::specialFrom('ps') .
+            " AND ps.`product_id` = '" . (int) self::id() . "' ORDER BY ps.`priority` ASC, ps.`price` ASC LIMIT 1");
 
         if ($query->num_rows) {
             self::$data['sale_price_start_date'] = $query->row['date_start'] == '0000-00-00' || $query->row['date_start'] == '0000-00-00 00:00:00' ? null : Valid::correctDate($query->row['date_start']);
@@ -514,14 +613,6 @@ class Product
             foreach ($products as $k => $val) {
                 if (empty($val)) { continue; }
 
-                $check = (self::special_price()/self::regular_price())*100;
-
-                if ($check > 1) {
-                    $sale_price = self::special_price();
-                } else {
-                    $sale_price = (self::regular_price() - (self::regular_price()*(self::special_price()/100)));
-                }
-                
                 /** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
                 $newVariation = array(
                     'id' => array(self::id()),
@@ -684,10 +775,13 @@ class Product
                 );
             }
 
-            $check = ($p/self::regular_price())*100;
+            /* pe PHP 8 împărțirea la zero e fatală, nu doar warning */
+            if ((float) self::regular_price() > 0) {
+                $check = ($p/self::regular_price())*100;
 
-            if ($check < 1) {
-                $p = (self::regular_price() - (self::regular_price()*($p/100)));
+                if ($check < 1) {
+                    $p = (self::regular_price() - (self::regular_price()*($p/100)));
+                }
             }
         } else {
             $p = self::getPrice(true);

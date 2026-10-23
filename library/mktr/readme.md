@@ -33,7 +33,23 @@ mktr/api/Reviews?key={RestAPI}&start_date=2000-01-01
 # Cron Command
 ```shell
 php {PAHT_TO_STORE}/system/library/mktr/cron.php
+# OpenCart 4
+php {PAHT_TO_STORE}/extension/mktr/system/library/mktr/cron.php
 ```
+
+# Order reconciliation
+Runs on every cron run (server cron, or Extensions > Cron Jobs on OpenCart 4 - registered
+on install / when the module settings page is opened, code `mktr_reconcile`).
+
+- order never reached theMarketer -> `save_order` + `update_order_status`
+- status changed outside the admin (payment callback, courier, direct DB writes) -> `update_order_status`
+- failed orders are retried up to 3 times; sent orders are tracked in `Storage/orders.json`
+```
+/index.php?route=mktr/api/Cron&key={RestAPI}&reconcile=1
+/index.php?route=mktr/api/Cron&key={RestAPI}&reconcile=1&from=2026-01-01
+```
+`from` = backfill: checks every order placed since that date, 50 per call. Call again until
+`backfill_done` is `1`.
 # Page
 &page=4
 

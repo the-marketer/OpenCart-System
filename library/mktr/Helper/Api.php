@@ -36,6 +36,15 @@ class Api
         return self::REST(self::$mURL . $name, $data, $post);
     }
 
+    /**
+     * Implicit e 1 secundă, ca să nu țină pagina clientului în loc. Din cron putem
+     * aștepta mai mult - acolo un răspuns lent nu trebuie să însemne comandă pierdută.
+     */
+    public static function setTimeOut($seconds)
+    {
+        self::$timeOut = (int) $seconds;
+    }
+
     /** @noinspection PhpUnused */
     public static function debug($data = array(), $post = true)
     {

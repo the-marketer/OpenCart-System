@@ -62,6 +62,10 @@ function getOnePage($page, $store, $list) {
 function run($store) {
 	$time = time();
 	$status = false;
+
+	// reconcilierea comenzilor merge la fiecare rulare, indiferent de feed
+	@file_get_contents(str_replace("&amp;", "&", $store['link'] . 'mktr/api/Cron' . ($store['q'] ? '&' : '?') . 'key=' . $store['rest_key'] . '&reconcile=1&t=' . time()));
+
 	if ($store['cron_feed'] == 1 && $store['update_feed_time'] < $time) {
 		$run = true;
 		$list = array();

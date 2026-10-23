@@ -44,12 +44,14 @@ class saveOrder
 
                 Api::send("save_order", $sOrder);
 
-                \Mktr\Helper\OrderLogs::i()->addToIfNot('orderIDs', $sOrder['number']);
-                \Mktr\Helper\OrderLogs::i()->save();
-
                 $list[] = $sOrder;
                 if (Api::getStatus() != 200) {
                     $allGood = false;
+                } else {
+                    /* doar ce a ajuns sigur; restul rămâne pentru reconciliere */
+                    \Mktr\Helper\OrderLogs::i()
+                        ->markSent($sOrder['number'], (int) \Mktr\Tracker\Model\Order::getStatusId($sOrder['number']))
+                        ->save();
                 }
 
                 if (!empty($sOrder['email_address'])) {

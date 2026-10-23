@@ -264,6 +264,12 @@ importScripts("https://t.themarketer.com/firebase.js");';
         return self::$init;
     }
 
+    /* uită setările încărcate, ca după Core::setStoreID() să se citească cele ale noului magazin */
+    public static function reset() {
+        self::$init = null;
+        self::$configValues = array();
+    }
+
     /** @noinspection PhpUnused */
     public static function getDefault($key) {
         return isset(self::$configDefaults[$key]) ? self::$configDefaults[$key] : null;

@@ -7,6 +7,8 @@ namespace Mktr\Tracker;
 
 use Mktr\Helper\Config;
 use Mktr\Helper\Core;
+use Mktr\Helper\Model\Store;
+use Mktr\Tracker\Routes\Cron;
 
 if (!defined('mktr_wishlist_remove')) {
     define('mktr_wishlist_remove', false);
@@ -158,6 +160,26 @@ trait Catalog {
             // Events::google_body().
             Events::loader_body() . '</head>',
             $output);
+    }
+
+    /**
+     * Pornit de Cron Jobs din OpenCart 4 (ruta cron/cron), o dată pe oră - vezi
+     * Install::addCron(). Argumentele le trimite OpenCart; nu avem nevoie de ele.
+     */
+    public static function cron($cron_id = 0, $code = '', $cycle = '', $date_added = '', $date_modified = '') {
+        $current = Core::getStoreID();
+
+        foreach (Store::getStores() as $store) {
+            Core::setStoreID((int) $store['store_id']);
+            Config::reset();
+
+            if (Config::getStatus()) {
+                Cron::reconcileOrders();
+            }
+        }
+
+        Core::setStoreID($current);
+        Config::reset();
     }
 
     public static function post_order_add($order_id) {

@@ -9,6 +9,7 @@ use Mktr\Helper\Api;
 use Mktr\Helper\Core;
 use Mktr\Helper\Config;
 use Mktr\Helper\FileSystem;
+use Mktr\Helper\OrderLogs;
 use Mktr\Helper\Model\Customer;
 use Mktr\Tracker\Model\Order;
 use Mktr\Tracker\Model\Product;
@@ -299,7 +300,7 @@ class Observer
                             $oId = Core::request()->get['order_id'];
                             $status = Order::getFromStatusList(Core::request()->post['order_status_id']);
                             self::$do = false;
-                            self::orderUp($oId, $status);
+                            self::orderUp($oId, $status, (int) Core::request()->post['order_status_id']);
                         }
                     break;
                     case 'rest/Custom_API_MTF_admin/FinalizeOrder':
@@ -310,7 +311,7 @@ class Observer
                             if (isset($data['OrderID'])) {
                                 $status = Order::getFromStatusList(200);
                                 self::$do = false;
-                                self::orderUp($data['OrderID'], $status);
+                                self::orderUp($data['OrderID'], $status, 200);
                             }
                         }
                     break;
@@ -323,7 +324,7 @@ class Observer
                                 if (isset($data['order_status_id'])) {
                                     $status = Order::getFromStatusList($data['order_status_id']);
                                     self::$do = false;
-                                    self::orderUp($id, $status);
+                                    self::orderUp($id, $status, (int) $data['order_status_id']);
                                 }
                             }
                         }
@@ -350,7 +351,7 @@ class Observer
                         }
                     }
                     break;
-                    case 'extension/module/cireviewpro/getInstance';
+                    case 'extension/module/cireviewpro/getInstance':
                         if (isset(Core::request()->post['newsletter'])) {
                             self::$eventName = 'setEmail';
                             
@@ -548,13 +549,17 @@ class Observer
         }
     }
 
-    public static function orderUp($oID, $status) {
+    public static function orderUp($oID, $status, $statusId = null) {
         $send = array(
             'order_number' => $oID,
             'order_status' => $status
         );
 
         Api::send("update_order_status", $send, false);
+
+        if ($statusId !== null && Api::getStatus() == 200) {
+            OrderLogs::i()->markStatus($oID, $statusId)->save();
+        }
     }
 
     public static function saveOrder($orderId)

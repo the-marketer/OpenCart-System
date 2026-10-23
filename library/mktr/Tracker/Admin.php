@@ -9,6 +9,7 @@ use Mktr\Helper\Core;
 use Mktr\Helper\Config;
 use Mktr\Helper\Logo;
 use Mktr\Helper\Form;
+use Mktr\Helper\Install;
 use Mktr\Helper\Model\Events;
 use Mktr\Helper\Model\mkConfig;
 use Mktr\Helper\Model\Module;
@@ -217,10 +218,11 @@ trait Admin {
                     'cron_feed' => array(
                         'title'     => 'Activate Cron Feed',
                         'type'      => 'select',
-                        'description' => '<b>If Enable, Please Add this to your server Cron Jobs</b><br /><code>0 * * * * /usr/bin/php ' .
-                        MKTR_ROOT . 'system/library/mktr/cron.php > ' .
-                        MKTR_ROOT . 'system/library/mktr/cron.log 2>&1</code><br />OR<br /><code>php ' .
-                        MKTR_ROOT . 'system/library/mktr/cron.php</code>'
+                        'description' => '<b>Please Add this to your server Cron Jobs</b> (feed, reviews and order reconciliation)<br /><code>0 * * * * /usr/bin/php ' .
+                        MKTR_LIB . 'cron.php > ' .
+                        MKTR_LIB . 'cron.log 2>&1</code><br />OR<br /><code>php ' .
+                        MKTR_LIB . 'cron.php</code>' .
+                        (Core::getOcVersion() >= '4' ? '<br />On OpenCart 4, order reconciliation also runs from Extensions &gt; Cron Jobs.' : '')
                     ),
                     'update_feed' => array(
                         'title'     => 'Cron Update feed every (hours)',
@@ -496,6 +498,9 @@ $out[] = '</div>';
         if (Config::$addToModule) {
             self::checkModule();
         }
+
+        /* magazinele care aveau modulul instalat dinainte nu trec prin install() */
+        Install::addCron();
 
         Form::initProcess();
 
@@ -870,6 +875,8 @@ $out[] = '</div>';
             Core::i()->model_setting_setting->editSetting('mktr_tracker', $settings);
         }
 
+        Install::addCron();
+
         self::checkModule();
     }
 
@@ -897,6 +904,8 @@ $out[] = '</div>';
             Core::i()->db->query("DELETE FROM " . DB_PREFIX . "layout_module WHERE `code` = 'mktr_tracker'");
             Events::deleteEventByCode(Core::getModuleCode());
         }
+
+        Install::deleteCron();
 
         mkConfig::drop();
     }
